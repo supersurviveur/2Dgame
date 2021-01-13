@@ -1,0 +1,403 @@
+# coding: utf8
+import pygame
+from pygame.locals import *
+from math import *
+import os,json,time
+from PIL import Image
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+pygame.init()
+
+######TODO######
+#-WATER kill
+#-change velocity and gravity with timestamp ####CURRENT
+#-add a character who speak
+######TODO######
+
+######CPROFILE######
+#python -m cProfile -s tottime 2Dgame.py
+############
+
+pygame.display.set_caption("2D game with pygame - super_surviveur")
+screen = pygame.display.set_mode((1080,720), pygame.RESIZABLE)
+screenWidth=screen.get_rect().width
+screenHeight=screen.get_rect().height
+police30 = pygame.font.Font("./assets/police.otf", 30)
+police40 = pygame.font.Font("./assets/police.otf", 40)
+###############################
+#LARGEUR -> [0] HAUTEUR -> [1]#
+###############################
+lifeGradient=[(255,0,0),(255,255,0),(0,255,0)]
+tileSize=48
+tilesList=[
+    "./textures/air.png",
+    "./textures/background.png",
+    "./textures/barrier.png",
+    "./textures/barrier_left.png",
+    "./textures/barrier_right.png",
+    "./textures/big_chest.png",
+    "./textures/big_stone.png",
+    "./textures/big_white_flower.png",
+    "./textures/big_yellow_flower.png",
+    "./textures/black_barrier.png",
+    "./textures/black_barrier_left.png",
+    "./textures/black_barrier_right.png",
+    "./textures/black_rich_sign.png",
+    "./textures/black_sign.png",
+    "./textures/black_sign_arrow.png",
+    "./textures/block_background.png",
+    "./textures/blue.png",
+    "./textures/bluegrass_blue.png",
+    "./textures/bluegrass_top.png",
+    "./textures/bluegrass_top_left.png",
+    "./textures/bluegrass_top_right.png",
+    "./textures/blue_background.png",
+    "./textures/blue_bluegrass.png",
+    "./textures/blue_left.png",
+    "./textures/blue_left_right.png",
+    "./textures/blue_right.png",
+    "./textures/blue_top_left.png",
+    "./textures/blue_top_left_right.png",
+    "./textures/blue_top_right.png",
+    "./textures/chest.png",
+    "./textures/crate.png",
+    "./textures/dirt.png",
+    "./textures/dirt_background.png",
+    "./textures/dirt_grass.png",
+    "./textures/dirt_left.png",
+    "./textures/dirt_left_right.png",
+    "./textures/dirt_right.png",
+    "./textures/dirt_top_left.png",
+    "./textures/dirt_top_left_right.png",
+    "./textures/dirt_top_right.png",
+    "./textures/epic_chest.png",
+    "./textures/floor0.png",
+    "./textures/floor1.png",
+    "./textures/floor100.png",
+    "./textures/floor16.png",
+    "./textures/floor17.png",
+    "./textures/floor18.png",
+    "./textures/floor19.png",
+    "./textures/floor2.png",
+    "./textures/floor20.png",
+    "./textures/floor21.png",
+    "./textures/floor3.png",
+    "./textures/floor34.png",
+    "./textures/floor35.png",
+    "./textures/floor36.png",
+    "./textures/floor4.png",
+    "./textures/floor5.png",
+    "./textures/floor51.png",
+    "./textures/floor52.png",
+    "./textures/floor53.png",
+    "./textures/floor6.png",
+    "./textures/floor67.png",
+    "./textures/floor68.png",
+    "./textures/floor69.png",
+    "./textures/floor83.png",
+    "./textures/floor84.png",
+    "./textures/floor99.png",
+    "./textures/floornew11.png",
+    "./textures/floornew2.png",
+    "./textures/floornew3.png",
+    "./textures/floornew4.png",
+    "./textures/floornew5.png",
+    "./textures/grass_dirt.png",
+    "./textures/grass_top.png",
+    "./textures/grass_top_left.png",
+    "./textures/grass_top_right.png",
+    "./textures/ladder_bottom.png",
+    "./textures/ladder_middle.png",
+    "./textures/ladder_top.png",
+    "./textures/lawn.png",
+    "./textures/rich_sign.png",
+    "./textures/roof_bacground2.png",
+    "./textures/roof_background.png",
+    "./textures/roof_blackground.png",
+    "./textures/roof_bottom.png",
+    "./textures/roof_left.png",
+    "./textures/roof_left_bottom.png",
+    "./textures/roof_left_top.png",
+    "./textures/roof_right.png",
+    "./textures/roof_right_bottom.png",
+    "./textures/roof_right_top.png",
+    "./textures/roof_round_left_bottom.png",
+    "./textures/roof_round_left_top.png",
+    "./textures/roof_round_right_bottom.png",
+    "./textures/roof_round_right_top.png",
+    "./textures/roof_top.png",
+    "./textures/sheet.png",
+    "./textures/sign.png",
+    "./textures/sign_arrow.png",
+    "./textures/stone.png",
+    "./textures/water.png",
+    "./textures/water_top.png",
+    "./textures/white_flower.png",
+    "./textures/yellow_flower.png",
+    "./textures/torch.png",
+]
+
+tiles=[pygame.transform.scale(pygame.image.load(i).convert_alpha(), (tileSize+1, tileSize)) for i in tilesList]
+persoList=[
+    ["./textures/characters/perso/wait.png", 21, 23],
+    ["./textures/characters/perso/wait2.png", 21, 23],
+    ["./textures/characters/perso/walk-0.png", 21, 23],
+    ["./textures/characters/perso/walk-1.png", 21, 23],
+    ["./textures/characters/perso/walk-2.png", 21, 23],
+    ["./textures/characters/perso/walk-3.png", 21, 23],
+    ["./textures/characters/perso/climb-0.png", 21, 23],
+    ["./textures/characters/perso/climb-1.png", 21, 23],
+    ["./textures/characters/perso/climb-2.png", 21, 23],
+    ["./textures/characters/perso/climb-3.png", 21, 23],
+]
+perso=[pygame.transform.scale(pygame.image.load(i[0]).convert_alpha(), (ceil(tileSize/17*i[1]), ceil(tileSize*1.5))) for i in persoList]
+heart=pygame.transform.scale(pygame.image.load("./textures/utils/heart.png").convert_alpha(), [52,48])
+lifeBorder=pygame.transform.scale(pygame.image.load("./textures/utils/border.png").convert_alpha(), [208,36])
+level=1
+
+class Levels:
+    def __init__(self):
+        self.backgroundImage=pygame.transform.scale(pygame.image.load("./textures/background.png"), (screen.get_rect().width, screen.get_rect().height))
+        s=''
+        for i in open("./map/level{}.json".format(level),"r").readlines():
+            s+=i
+        self.map=json.loads(s)
+
+        self.obstacle=[i for i in self.map['obstacle']]
+        self.back=[i for i in self.map['back']]
+        self.decors=[i for i in self.map['decors']]
+        self.utils=[i for i in self.map['utils']]
+        self.pos=[-1,2]
+        self.playerPos=[12,9]
+        self.pressed={}
+        self.chute=0
+        self.ground=True
+        self.gravityAcceleration=1.06
+        self.ladder=False
+    def draw(self):
+        screen.fill((38,167,173))
+        pos1=self.pos[0]*tileSize
+        pos2=self.pos[1]*tileSize
+        for i in range(ceil(self.pos[1]*-1-1),ceil(screenHeight//tileSize-self.pos[1]+1)):
+            for i2 in range(ceil(self.pos[0]-1),ceil(screenWidth//tileSize-self.pos[0]+1)):
+                pos=[pos1+tileSize*i2,pos2+tileSize*i]
+                tBack=self.back[i][i2]
+                tObstacle=self.obstacle[i][i2]
+                tDecors=self.decors[i][i2]
+                tUtils=self.utils[i][i2]
+                if tBack!=0:
+                    screen.blit(tiles[tBack],pos)
+                if tObstacle!=0:
+                    screen.blit(tiles[tObstacle],pos)
+                if tDecors!=0:
+                    screen.blit(tiles[tDecors],pos)
+                if tUtils!=0:
+                    screen.blit(tiles[tUtils],pos)
+
+                    
+    
+    def move(self,velocity,player):
+        player.move=False
+        player.climb=False
+        if self.pressed.get(pygame.K_RIGHT):
+            bord=False
+            if self.obstacle[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-0.9)]!=0 or self.obstacle[ceil(self.playerPos[1]-3)][ceil(self.playerPos[0]-0.9)]!=0 or (self.ground==False and self.obstacle[ceil(self.playerPos[1]-1)][ceil(self.playerPos[0]-0.9)]!=0):
+                bord=True
+            if bord==False:
+                self.pos[0]-=velocity/50
+                self.playerPos[0]+=velocity/50
+                player.lastDirection=0
+                player.move=True
+        if self.pressed.get(pygame.K_LEFT):
+            bord=False
+            if self.obstacle[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.9)]!=0 or self.obstacle[ceil(self.playerPos[1]-3)][ceil(self.playerPos[0]-1.9)]!=0 or (self.ground==False and self.obstacle[ceil(self.playerPos[1]-1)][ceil(self.playerPos[0]-1.9)]!=0):
+                bord=True
+
+            if bord==False:
+                self.pos[0]+=velocity/50
+                self.playerPos[0]-=velocity/50
+                player.lastDirection=180
+                player.move=True
+        if self.pressed.get(pygame.K_UP):
+            if self.ladder:
+                self.pos[1]+=velocity/50
+                self.playerPos[1]-=velocity/50
+                player.climb=True
+        if self.pressed.get(pygame.K_DOWN):
+            if self.ladder and ("ladder" in tilesList[self.utils[ceil(self.playerPos[1]-1)][ceil(self.playerPos[0]-1.2)]] or "ladder" in tilesList[self.utils[ceil(self.playerPos[1]-1)][ceil(self.playerPos[0]-1.8)]]):
+                self.pos[1]-=velocity/50
+                self.playerPos[1]+=velocity/50
+                player.climb=True
+        if self.pressed.get(pygame.K_SPACE):
+            if self.ground:
+                self.chute=-velocity/5
+
+        if self.chute!=0:
+            tempX=self.playerPos[1]+self.chute
+            self.pos[1]-=self.chute
+            if self.chute<0:
+                self.chute=(tempX-self.playerPos[1])/(self.gravityAcceleration*1.05)
+            elif self.chute<0.14:
+                self.chute=(tempX-self.playerPos[1])*self.gravityAcceleration
+            self.playerPos[1]=tempX
+
+    def gravity(self):
+        self.ground=False
+        self.ladder=False
+        try:
+            top=ceil(self.playerPos[1]-1)
+            decorsElement=tilesList[self.decors[top][ceil(self.playerPos[0]-1.2)]]
+            decorsElement2=tilesList[self.decors[top][ceil(self.playerPos[0]-1.8)]]
+            utilsElement=tilesList[self.utils[top][ceil(self.playerPos[0]-1.2)]]
+            utilsElement2=tilesList[self.utils[top][ceil(self.playerPos[0]-1.8)]]
+            if self.obstacle[top][ceil(self.playerPos[0]-1.2)]!=0 or self.obstacle[top][ceil(self.playerPos[0]-1.8)]!=0 or ((self.back[top][ceil(self.playerPos[0]-1.2)]!=0 or self.back[top][ceil(self.playerPos[0]-1.8)]!=0) and (self.back[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.2)]==0 and self.back[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.8)]==0)):
+                self.ground=True
+            if "water_top" in decorsElement or "water_top" in decorsElement2:
+                self.ground=True
+                self.water()
+            if "ladder" in utilsElement or "ladder" in utilsElement2 or "ladder" in tilesList[self.utils[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.2)]] or "ladder" in tilesList[self.utils[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.8)]]:
+                self.ladder=True
+            if "sign" in tilesList[self.utils[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.2)]]:
+                if self.pressed.get(pygame.K_a):
+                    sign.read(ceil(self.playerPos[1]-2),ceil(self.playerPos[0]-1.2))
+            if "sign" in tilesList[self.utils[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.8)]]:
+                if self.pressed.get(pygame.K_a):
+                    sign.read(ceil(self.playerPos[1]-2),ceil(self.playerPos[0]-1.8))
+        except:
+            pass
+        if self.ground or self.ladder:
+            self.chute=0
+        else:
+            if round(self.chute,2)==0 and self.chute<=0:
+                self.chute=0.003
+            
+    def water(self):
+        if level==1:
+            tuto.water()
+        else:
+            print("sign")
+
+
+
+class Player:
+    def __init__(self):
+        self.life=100
+        self.maxLife=100
+        self.img=perso
+        self.lastDirection=0
+        self.move=False
+        self.climb=False
+
+    def draw(self,levels):
+        if self.move and levels.ground:
+            current=ceil(iteration/vitesseAnimation)%4+2
+        elif self.climb:
+            current=ceil(iteration/vitesseAnimation)%4+6
+        elif levels.ladder:
+            current=6
+        elif levels.ground:
+            current=ceil(iteration/vitesseAnimation)%2
+        else:
+            current=0
+        if self.lastDirection==0:
+            screen.blit(self.img[current], ((levels.playerPos[0]-1+levels.pos[0])*tileSize,(levels.playerPos[1]-1+levels.pos[1])*tileSize-25))
+        else:
+            screen.blit(pygame.transform.flip(self.img[current], True, False), ((levels.playerPos[0]-1+levels.pos[0])*tileSize,(levels.playerPos[1]-1+levels.pos[1])*tileSize-25))
+        
+        lifePercent=self.life/self.maxLife*3
+        if lifePercent<1:
+            color=(255,0,0)
+        elif lifePercent<2:
+            color=(255,255,0)
+        else:
+            color=(0,255,0)
+        pygame.draw.rect(screen, color, [50,30,lifeBorder.get_rect().width/self.maxLife*self.life,lifeBorder.get_rect().height])
+        screen.blit(lifeBorder, [50,30])
+        screen.blit(heart, [20,23])
+
+class Sign:
+    def __init__(self):
+        s=''
+        for i in open("./map/sign{}.json".format(level),"r").readlines():
+            s+=i
+        self.sign=[i for i in json.loads(s)['sign']]
+    
+    def read(self,pos):
+        pass
+
+
+
+class Tuto:
+    def __init__(self):
+        self.waterText=False
+        self.waterTime=0
+        self.t=[
+            ["UTILISEZ LES FLECHES", 250, 540],
+            ["POUR VOUS DEPLACER", 280, 550],
+            ["UTILISEZ LA TOUCHE ESPACE", 350, 1000],
+            ["POUR SAUTER", 380, 1110],
+            ["NE TOUCHE PAS L'EAU !", 250, 1500],
+            ["ELLE TE TUERAIT !", 280, 1535],
+            ["UTILISE LA FLECHE DU HAUT", 200, 1920],
+            ["POUR GRIMPER A L'ECHELLE", 230, 1925],
+            ["UTILISE LA TOUCHE 'A'", 100, 2450],
+            ["POUR LIRE LES PANCARTES", 130, 2420],
+        ]
+        self.text=[police30.render(i[0], False, pygame.Color("#FFFFFF")) for i in self.t]
+        self.attention=police40.render("FAIT ATTENTION !", False, pygame.Color("#FF0000"))
+    
+    def draw(self):
+        for i,v in enumerate(self.text):
+            rectText = v.get_rect()
+            rectText.top = self.t[i][1]+levels.pos[1]*tileSize
+            rectText.left = self.t[i][2]+levels.pos[0]*tileSize
+            screen.blit(v, rectText)
+
+        if self.waterTime+5>time.time():
+            rectText = self.attention.get_rect()
+            rectText.centery = screenHeight/10*6
+            rectText.centerx = screenWidth/2
+            screen.blit(self.attention, rectText)
+
+    def water(self):
+        self.waterText=True
+        self.waterTime=time.time()
+        levels.pos=[-21,1]
+        levels.playerPos=[32.5,10]
+
+levels=Levels()
+player=Player()
+sign=Sign()
+tuto=Tuto()
+game=True
+iteration=0
+vitesseAnimation=20
+timeStamp=time.time()
+while game:
+    PCspeed=time.time()-timeStamp+1
+    timeStamp=time.time()
+    #VARIABLE WITH TIMESTAMP#
+    vitesseAnimation=100*PCspeed
+    vitessePlayer=0.75*PCspeed
+    levels.gravityAcceleration=1.008*PCspeed
+    #########################
+    levels.draw()
+    if level==1:
+        tuto.draw()
+    levels.move(vitessePlayer,player)
+    player.draw(levels)
+    levels.gravity()
+    for event in pygame.event.get():
+        if event.type==pygame.QUIT:
+            game=False
+        elif event.type==pygame.KEYDOWN:
+            #DEPLACEMENT DE LA CAMERA#
+            levels.pressed[event.key]=True
+        elif event.type==pygame.KEYUP:
+            levels.pressed[event.key]=False
+        elif event.type == VIDEORESIZE:
+            tileSize=ceil(event.w/(screenWidth/tileSize))
+            tiles=[pygame.transform.scale(pygame.image.load(i).convert_alpha(), (tileSize+1, tileSize)) for i in tilesList]
+    pygame.display.flip()
+    iteration+=1
+    if iteration/vitesseAnimation>10:
+        iteration=0
