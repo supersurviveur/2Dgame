@@ -9,7 +9,7 @@ pygame.init()
 
 ######TODO######
 #-WATER kill
-#-change velocity and gravity with timestamp ####CURRENT
+#-change velocity and gravity with timestamp
 #-add a character who speak
 ######TODO######
 
@@ -166,8 +166,8 @@ class Levels:
         self.back=[i for i in self.map['back']]
         self.decors=[i for i in self.map['decors']]
         self.utils=[i for i in self.map['utils']]
-        self.pos=[-1,2]
-        self.playerPos=[12,9]
+        self.pos=[-1,4]       #[-41,8]MIDDLE
+        self.playerPos=[12,7]       #[52,2]MIDDLE
         self.pressed={}
         self.chute=0
         self.ground=True
@@ -258,10 +258,10 @@ class Levels:
                 self.ladder=True
             if "sign" in tilesList[self.utils[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.2)]]:
                 if self.pressed.get(pygame.K_a):
-                    sign.read(ceil(self.playerPos[1]-2),ceil(self.playerPos[0]-1.2))
+                    sign.read([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.2)])
             if "sign" in tilesList[self.utils[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.8)]]:
                 if self.pressed.get(pygame.K_a):
-                    sign.read(ceil(self.playerPos[1]-2),ceil(self.playerPos[0]-1.8))
+                    sign.read([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.8)])
         except:
             pass
         if self.ground or self.ladder:
@@ -322,7 +322,14 @@ class Sign:
         self.sign=[i for i in json.loads(s)['sign']]
     
     def read(self,pos):
-        pass
+        for s in self.sign:
+            if s[1]==pos[0] and s[0]==pos[1]:
+                text=police30.render(s[2], False, pygame.Color("#FFFFFF"))
+                rectText = text.get_rect()
+                rectText.top = (s[1]-2.5+levels.pos[1])*tileSize
+                rectText.left = (s[0]+0.5+levels.pos[0])*tileSize-rectText.width/2
+                screen.blit(text, rectText)
+                break
 
 
 
@@ -339,8 +346,8 @@ class Tuto:
             ["ELLE TE TUERAIT !", 280, 1535],
             ["UTILISE LA FLECHE DU HAUT", 200, 1920],
             ["POUR GRIMPER A L'ECHELLE", 230, 1925],
-            ["UTILISE LA TOUCHE 'A'", 100, 2450],
-            ["POUR LIRE LES PANCARTES", 130, 2420],
+            ["UTILISE LA TOUCHE 'A'", 0, 2450],
+            ["POUR LIRE LES PANCARTES", 30, 2420],
         ]
         self.text=[police30.render(i[0], False, pygame.Color("#FFFFFF")) for i in self.t]
         self.attention=police40.render("FAIT ATTENTION !", False, pygame.Color("#FF0000"))
@@ -367,6 +374,7 @@ class Tuto:
 levels=Levels()
 player=Player()
 sign=Sign()
+sign.read([1,1])
 tuto=Tuto()
 game=True
 iteration=0
@@ -392,6 +400,8 @@ while game:
         elif event.type==pygame.KEYDOWN:
             #DEPLACEMENT DE LA CAMERA#
             levels.pressed[event.key]=True
+            if event.key==pygame.K_p:
+                print("player:"+str(levels.playerPos)+"\nlevel:"+str(levels.pos))
         elif event.type==pygame.KEYUP:
             levels.pressed[event.key]=False
         elif event.type == VIDEORESIZE:
