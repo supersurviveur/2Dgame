@@ -3,7 +3,6 @@ import pygame
 from pygame.locals import *
 from math import *
 import os,json,time
-from PIL import Image
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 pygame.init()
 
@@ -150,6 +149,11 @@ persoList=[
     ["./textures/characters/perso/climb-3.png", 21, 23],
 ]
 perso=[pygame.transform.scale(pygame.image.load(i[0]).convert_alpha(), (ceil(tileSize/17*i[1]), ceil(tileSize*1.5))) for i in persoList]
+talkList=[
+    ["./textures/characters/talk/wait-0.png", 21, 23],
+    ["./textures/characters/talk/wait-1.png", 21, 23],
+]
+talk=[pygame.transform.scale(pygame.image.load(i[0]).convert_alpha(), (ceil(tileSize/17*i[1]), ceil(tileSize*1.5))) for i in talkList]
 heart=pygame.transform.scale(pygame.image.load("./textures/utils/heart.png").convert_alpha(), [52,48])
 lifeBorder=pygame.transform.scale(pygame.image.load("./textures/utils/border.png").convert_alpha(), [208,36])
 level=1
@@ -262,6 +266,8 @@ class Levels:
             if "sign" in tilesList[self.utils[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.8)]]:
                 if self.pressed.get(pygame.K_a):
                     sign.read([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.8)])
+            
+            character.isAtPos()
         except:
             pass
         if self.ground or self.ladder:
@@ -274,7 +280,7 @@ class Levels:
         if level==1:
             tuto.water()
         else:
-            print("sign")
+            pass
 
 
 
@@ -331,7 +337,32 @@ class Sign:
                 screen.blit(text, rectText)
                 break
 
-
+class Character:
+    def __init__(self):
+        s=''
+        for i in open("./map/character{}.json".format(level),"r").readlines():
+            s+=i
+        self.character=[i for i in json.loads(s)['character']]
+        self.img=talk
+    
+    def draw(self):
+        current=ceil(iteration/vitesseAnimation)%2
+        for s in self.character:
+            if s[4]==0:
+                screen.blit(self.img[current], ((s[1]-levels.pos[1])*tileSize,(s[0]-levels.pos[0])*tileSize))
+            else:
+                screen.blit(pygame.transform.flip(self.img[current], True, False), ((s[1]-levels.pos[1])*tileSize,(s[0]-levels.pos[0])*tileSize))
+            
+    
+    def isAtPos(self,pos):
+        for s in self.character:
+            if s[1]==pos[0] and s[0]==pos[1]:
+                text=police30.render(s[3][s[2]], False, pygame.Color("#FFFFFF"))
+                rectText = text.get_rect()
+                rectText.top = (s[1]-2.5+levels.pos[1])*tileSize
+                rectText.left = (s[0]+0.5+levels.pos[0])*tileSize-rectText.width/2
+                screen.blit(text, rectText)
+                break
 
 class Tuto:
     def __init__(self):
@@ -374,6 +405,7 @@ class Tuto:
 levels=Levels()
 player=Player()
 sign=Sign()
+character=Character()
 sign.read([1,1])
 tuto=Tuto()
 game=True
@@ -389,6 +421,7 @@ while game:
     levels.gravityAcceleration=1.008*PCspeed
     #########################
     levels.draw()
+    character.draw()
     if level==1:
         tuto.draw()
     levels.move(vitessePlayer,player)
