@@ -2,14 +2,13 @@
 import pygame
 from pygame.locals import *
 from math import *
-import os,json,time
+import os,json,time,codecs
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 pygame.init()
 
 ######TODO######
 #-WATER kill
 #-change velocity and gravity with timestamp
-#-add a character who speak
 ######TODO######
 
 ######CPROFILE######
@@ -20,6 +19,7 @@ pygame.display.set_caption("2D game with pygame - super_surviveur")
 screen = pygame.display.set_mode((1080,720), pygame.RESIZABLE)
 screenWidth=screen.get_rect().width
 screenHeight=screen.get_rect().height
+police20 = pygame.font.Font("./assets/police.otf", 20)
 police30 = pygame.font.Font("./assets/police.otf", 30)
 police40 = pygame.font.Font("./assets/police.otf", 40)
 ###############################
@@ -157,6 +157,7 @@ talk=[pygame.transform.scale(pygame.image.load(i[0]).convert_alpha(), (ceil(tile
 heart=pygame.transform.scale(pygame.image.load("./textures/utils/heart.png").convert_alpha(), [52,48])
 lifeBorder=pygame.transform.scale(pygame.image.load("./textures/utils/border.png").convert_alpha(), [208,36])
 level=1
+name="vous"
 
 class Levels:
     def __init__(self):
@@ -170,13 +171,15 @@ class Levels:
         self.back=[i for i in self.map['back']]
         self.decors=[i for i in self.map['decors']]
         self.utils=[i for i in self.map['utils']]
-        self.pos=[-1,4]       #[-41,8]MIDDLE
-        self.playerPos=[12,7]       #[52,2]MIDDLE
+        self.pos=[-47,4]       #MIDDLE[-1,4]
+        self.playerPos=[58,6]       #MIDDLE[12,7]
         self.pressed={}
         self.chute=0
         self.ground=True
         self.gravityAcceleration=1.06
         self.ladder=False
+        self.talk=False
+
     def draw(self):
         screen.fill((38,167,173))
         pos1=self.pos[0]*tileSize
@@ -202,47 +205,48 @@ class Levels:
     def move(self,velocity,player):
         player.move=False
         player.climb=False
-        if self.pressed.get(pygame.K_RIGHT):
-            bord=False
-            if self.obstacle[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-0.9)]!=0 or self.obstacle[ceil(self.playerPos[1]-3)][ceil(self.playerPos[0]-0.9)]!=0 or (self.ground==False and self.obstacle[ceil(self.playerPos[1]-1)][ceil(self.playerPos[0]-0.9)]!=0):
-                bord=True
-            if bord==False:
-                self.pos[0]-=velocity/50
-                self.playerPos[0]+=velocity/50
-                player.lastDirection=0
-                player.move=True
-        if self.pressed.get(pygame.K_LEFT):
-            bord=False
-            if self.obstacle[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.9)]!=0 or self.obstacle[ceil(self.playerPos[1]-3)][ceil(self.playerPos[0]-1.9)]!=0 or (self.ground==False and self.obstacle[ceil(self.playerPos[1]-1)][ceil(self.playerPos[0]-1.9)]!=0):
-                bord=True
+        if self.talk==False:
+            if self.pressed.get(pygame.K_RIGHT):
+                bord=False
+                if self.obstacle[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-0.9)]!=0 or self.obstacle[ceil(self.playerPos[1]-3)][ceil(self.playerPos[0]-0.9)]!=0 or (self.ground==False and self.obstacle[ceil(self.playerPos[1]-1)][ceil(self.playerPos[0]-0.9)]!=0):
+                    bord=True
+                if bord==False:
+                    self.pos[0]-=velocity/50
+                    self.playerPos[0]+=velocity/50
+                    player.lastDirection=0
+                    player.move=True
+            if self.pressed.get(pygame.K_LEFT):
+                bord=False
+                if self.obstacle[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.9)]!=0 or self.obstacle[ceil(self.playerPos[1]-3)][ceil(self.playerPos[0]-1.9)]!=0 or (self.ground==False and self.obstacle[ceil(self.playerPos[1]-1)][ceil(self.playerPos[0]-1.9)]!=0):
+                    bord=True
 
-            if bord==False:
-                self.pos[0]+=velocity/50
-                self.playerPos[0]-=velocity/50
-                player.lastDirection=180
-                player.move=True
-        if self.pressed.get(pygame.K_UP):
-            if self.ladder:
-                self.pos[1]+=velocity/50
-                self.playerPos[1]-=velocity/50
-                player.climb=True
-        if self.pressed.get(pygame.K_DOWN):
-            if self.ladder and ("ladder" in tilesList[self.utils[ceil(self.playerPos[1]-1)][ceil(self.playerPos[0]-1.2)]] or "ladder" in tilesList[self.utils[ceil(self.playerPos[1]-1)][ceil(self.playerPos[0]-1.8)]]):
-                self.pos[1]-=velocity/50
-                self.playerPos[1]+=velocity/50
-                player.climb=True
-        if self.pressed.get(pygame.K_SPACE):
-            if self.ground:
-                self.chute=-velocity/5
+                if bord==False:
+                    self.pos[0]+=velocity/50
+                    self.playerPos[0]-=velocity/50
+                    player.lastDirection=180
+                    player.move=True
+            if self.pressed.get(pygame.K_UP):
+                if self.ladder:
+                    self.pos[1]+=velocity/50
+                    self.playerPos[1]-=velocity/50
+                    player.climb=True
+            if self.pressed.get(pygame.K_DOWN):
+                if self.ladder and ("ladder" in tilesList[self.utils[ceil(self.playerPos[1]-1)][ceil(self.playerPos[0]-1.2)]] or "ladder" in tilesList[self.utils[ceil(self.playerPos[1]-1)][ceil(self.playerPos[0]-1.8)]]):
+                    self.pos[1]-=velocity/50
+                    self.playerPos[1]+=velocity/50
+                    player.climb=True
+            if self.pressed.get(pygame.K_SPACE):
+                if self.ground:
+                    self.chute=-velocity/5
 
-        if self.chute!=0:
-            tempX=self.playerPos[1]+self.chute
-            self.pos[1]-=self.chute
-            if self.chute<0:
-                self.chute=(tempX-self.playerPos[1])/(self.gravityAcceleration*1.05)
-            elif self.chute<0.14:
-                self.chute=(tempX-self.playerPos[1])*self.gravityAcceleration
-            self.playerPos[1]=tempX
+            if self.chute!=0:
+                tempX=self.playerPos[1]+self.chute
+                self.pos[1]-=self.chute
+                if self.chute<0:
+                    self.chute=(tempX-self.playerPos[1])/(self.gravityAcceleration*1.05)
+                elif self.chute<0.14:
+                    self.chute=(tempX-self.playerPos[1])*self.gravityAcceleration
+                self.playerPos[1]=tempX
 
     def gravity(self):
         self.ground=False
@@ -267,7 +271,7 @@ class Levels:
                 if self.pressed.get(pygame.K_a):
                     sign.read([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.8)])
             
-            character.isAtPos()
+            character.isAtPos([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.8)])
         except:
             pass
         if self.ground or self.ladder:
@@ -292,6 +296,7 @@ class Player:
         self.lastDirection=0
         self.move=False
         self.climb=False
+        self.talk=False
 
     def draw(self,levels):
         if self.move and levels.ground:
@@ -340,48 +345,74 @@ class Sign:
 class Character:
     def __init__(self):
         s=''
-        for i in open("./map/character{}.json".format(level),"r").readlines():
+        for i in codecs.open("./map/character{}.json".format(level),"r", "utf-8").readlines():
             s+=i
         self.character=[i for i in json.loads(s)['character']]
         self.img=talk
+        self.talk=False
+        self.name=['noname','noname']
     
     def draw(self):
         current=ceil(iteration/vitesseAnimation)%2
         for s in self.character:
-            if s[4]==0:
-                screen.blit(self.img[current], ((s[1]-levels.pos[1])*tileSize,(s[0]-levels.pos[0])*tileSize))
+            if s[0]<levels.playerPos[0]-1:
+                screen.blit(self.img[current], ((s[0]+levels.pos[0])*tileSize,(s[1]+levels.pos[1])*tileSize))
             else:
-                screen.blit(pygame.transform.flip(self.img[current], True, False), ((s[1]-levels.pos[1])*tileSize,(s[0]-levels.pos[0])*tileSize))
+                screen.blit(pygame.transform.flip(self.img[current], True, False), ((s[0]+levels.pos[0])*tileSize,(s[1]+levels.pos[1])*tileSize))
+        if self.talk!=False:
+            s=pygame.Surface((screenWidth/2,screenHeight/6), pygame.SRCALPHA)
+            s.fill((130,130,130,200))
+            screen.blit(s,[screenWidth/4,screenHeight/8*5.5])
+            for i in [self.talk[self.talk[2]%2+3]]:
+                for iterate,s in enumerate(i[floor(self.talk[2]/2)].split("\n")):
+                    if iterate==0:
+                        text=police20.render(self.name[self.talk[2]%2]+" > "+s, False, pygame.Color("#FFFFFF"))
+                    else:
+                        text=police20.render(s, False, pygame.Color("#FFFFFF"))
+                    rectText = text.get_rect()
+                    rectText.top = screenHeight/8*5.5+23*iterate
+                    rectText.left = screenWidth/4+5
+                    screen.blit(text, rectText)
             
     
     def isAtPos(self,pos):
         for s in self.character:
-            if s[1]==pos[0] and s[0]==pos[1]:
-                text=police30.render(s[3][s[2]], False, pygame.Color("#FFFFFF"))
-                rectText = text.get_rect()
-                rectText.top = (s[1]-2.5+levels.pos[1])*tileSize
-                rectText.left = (s[0]+0.5+levels.pos[0])*tileSize-rectText.width/2
-                screen.blit(text, rectText)
-                break
+            if (s[1]>=pos[0] and s[1]<=pos[0]+2) or (s[1]>=pos[0]-2 and s[1]<=pos[0]):
+                if (s[0]>=pos[1] and s[0]<=pos[1]+2) or (s[0]>=pos[1]-2 and s[0]<=pos[1]):
+                    if levels.pressed.get(pygame.K_a):
+                        levels.talk=True
+                        player.talk=True
+                        self.talk=s
+                        self.name=[s[5],name]
+                        if s[0]<levels.playerPos[0]-1:
+                            player.lastDirection=180
+                    elif self.talk==False:
+                        text=police30.render("SALUT !", False, pygame.Color("#FFFFFF"))
+                        rectText = text.get_rect()
+                        rectText.top = (s[1]-1+levels.pos[1])*tileSize
+                        rectText.left = (s[0]+2+levels.pos[0])*tileSize-rectText.width/2
+                        screen.blit(text, rectText)
+                    break
 
-class Tuto:
+    def change(self):
+        if self.talk[2]+1==len(self.talk[4])+len(self.talk[3]):
+            levels.talk=False
+            player.talk=False
+            for v,s in enumerate(self.character):
+                if s[0]==self.talk[0] and s[1]==self.talk[1]:
+                    self.character[v][2]=0
+            self.talk=False
+            self.name=['noname','noname']
+        else:
+            self.talk[2]+=1
+
+class Text:
     def __init__(self):
-        self.waterText=False
-        self.waterTime=0
-        self.t=[
-            ["UTILISEZ LES FLECHES", 250, 540],
-            ["POUR VOUS DEPLACER", 280, 550],
-            ["UTILISEZ LA TOUCHE ESPACE", 350, 1000],
-            ["POUR SAUTER", 380, 1110],
-            ["NE TOUCHE PAS L'EAU !", 250, 1500],
-            ["ELLE TE TUERAIT !", 280, 1535],
-            ["UTILISE LA FLECHE DU HAUT", 200, 1920],
-            ["POUR GRIMPER A L'ECHELLE", 230, 1925],
-            ["UTILISE LA TOUCHE 'A'", 0, 2450],
-            ["POUR LIRE LES PANCARTES", 30, 2420],
-        ]
+        s=''
+        for i in codecs.open("./map/text{}.json".format(level),"r", "utf-8").readlines():
+            s+=i
+        self.t=[i for i in json.loads(s)['text']]
         self.text=[police30.render(i[0], False, pygame.Color("#FFFFFF")) for i in self.t]
-        self.attention=police40.render("FAIT ATTENTION !", False, pygame.Color("#FF0000"))
     
     def draw(self):
         for i,v in enumerate(self.text):
@@ -390,6 +421,15 @@ class Tuto:
             rectText.left = self.t[i][2]+levels.pos[0]*tileSize
             screen.blit(v, rectText)
 
+        
+
+class Tuto:
+    def __init__(self):
+        self.waterText=False
+        self.waterTime=0
+        self.attention=police40.render("FAIT ATTENTION !", False, pygame.Color("#FF0000"))
+    
+    def draw(self):
         if self.waterTime+5>time.time():
             rectText = self.attention.get_rect()
             rectText.centery = screenHeight/10*6
@@ -407,6 +447,7 @@ player=Player()
 sign=Sign()
 character=Character()
 sign.read([1,1])
+text=Text()
 tuto=Tuto()
 game=True
 iteration=0
@@ -421,25 +462,30 @@ while game:
     levels.gravityAcceleration=1.008*PCspeed
     #########################
     levels.draw()
-    character.draw()
+    text.draw()
     if level==1:
         tuto.draw()
     levels.move(vitessePlayer,player)
     player.draw(levels)
+    character.draw()
     levels.gravity()
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
             game=False
         elif event.type==pygame.KEYDOWN:
             #DEPLACEMENT DE LA CAMERA#
-            levels.pressed[event.key]=True
             if event.key==pygame.K_p:
                 print("player:"+str(levels.playerPos)+"\nlevel:"+str(levels.pos))
+            elif event.key==pygame.K_a and levels.talk:
+                character.change()
+            else:
+                levels.pressed[event.key]=True
         elif event.type==pygame.KEYUP:
             levels.pressed[event.key]=False
         elif event.type == VIDEORESIZE:
             tileSize=ceil(event.w/(screenWidth/tileSize))
             tiles=[pygame.transform.scale(pygame.image.load(i).convert_alpha(), (tileSize+1, tileSize)) for i in tilesList]
+    # screen.blit(pygame.transform.scale(screen, (2*screenWidth,2*screenHeight)), (-screenWidth/2,-screenHeight/2))
     pygame.display.flip()
     iteration+=1
     if iteration/vitesseAnimation>10:

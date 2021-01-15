@@ -1,5 +1,16 @@
 {
     "character":[
-        [1,1,0,["TEXT"],180]
+        [
+            62,
+            5.5,
+            0,
+            [
+                "Ça va ?",
+                "Ah ? Tu ne sais pas ? Eh bien nous sommes\ndans la forêt des lutins ! Mais je vois que tu n'as\npas d'équipement. Il me semble avoir vu un coffre au\nbout de ce chemin. Mais fait attention !\nIl est rempli de monstre..."
+            ],[
+                "Oui... Où est-on ?"
+            ],
+            "ELI"
+        ]
     ]
 }
