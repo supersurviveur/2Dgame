@@ -386,6 +386,8 @@ class Character:
                         self.name=[s[5],name]
                         if s[0]<levels.playerPos[0]-1:
                             player.lastDirection=180
+                        else:
+                            player.lastDirection=0
                     elif self.talk==False:
                         text=police30.render("SALUT !", False, pygame.Color("#FFFFFF"))
                         rectText = text.get_rect()
