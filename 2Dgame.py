@@ -154,6 +154,11 @@ talkList=[
     ["./textures/characters/talk/wait-1.png", 21, 23],
 ]
 talk=[pygame.transform.scale(pygame.image.load(i[0]).convert_alpha(), (ceil(tileSize/17*i[1]), ceil(tileSize*1.5))) for i in talkList]
+snakeList=[
+    ["./textures/characters/snake/snake0.png", 21, 23],
+    ["./textures/characters/snake/snake1.png", 21, 23],
+]
+snake=[pygame.transform.scale(pygame.image.load(i[0]).convert_alpha(), (ceil(tileSize/17*i[1]), ceil(tileSize*1.5))) for i in snakeList]
 heart=pygame.transform.scale(pygame.image.load("./textures/utils/heart.png").convert_alpha(), [52,48])
 lifeBorder=pygame.transform.scale(pygame.image.load("./textures/utils/border.png").convert_alpha(), [208,36])
 level=1
@@ -423,7 +428,78 @@ class Text:
             rectText.left = self.t[i][2]+levels.pos[0]*tileSize
             screen.blit(v, rectText)
 
-        
+class Monster:
+    def __init__(self):
+        s=''
+        for i in codecs.open("./map/monster{}.json".format(level),"r", "utf-8").readlines():
+            s+=i
+        self.monster=[i for i in json.loads(s)['monster']]
+        self.img=snake
+    
+    def draw(self):
+        for m in self.monster:
+            current=ceil(iteration/vitesseAnimation)%2
+            if m[4]==0:
+                screen.blit(self.img[current], ((m[3][0]-1+levels.pos[0])*tileSize,(m[3][1]-1+levels.pos[1])*tileSize-25))
+            else:
+                screen.blit(pygame.transform.flip(self.img[current], True, False), ((m[3][0]-1+levels.pos[0])*tileSize,(m[3][1]-1+levels.pos[1])*tileSize-25))
+            
+    
+    def move(self):
+        pass
+    
+    def gravity(self, PCspeed):
+        for m in self.monster:
+            ground=False
+            try:
+                top=ceil(m[3][1]-1)
+                if levels.obstacle[top][ceil(m[3][0]-1.2)]!=0 or levels.obstacle[top][ceil(m[3][0]-1.8)]!=0 or ((levels.back[top][ceil(m[3][0]-1.2)]!=0 or levels.back[top][ceil(m[3][0]-1.8)]!=0) and (levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-1.2)]==0 and levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-1.8)]==0)):
+                    ground=True
+            except:
+                pass
+            if ground:
+                m[6]=0
+            else:
+                if round(m[6],2)==0 and m[6]<=0:
+                    m[6]=0.003
+
+            if m[4]==0:
+                if not(levels.obstacle[ceil(m[3][1]-2)][ceil(m[3][0]+0.1)]!=0 or levels.obstacle[ceil(m[3][1]-3)][ceil(m[3][0]+0.1)]!=0 or (ground==False and levels.obstacle[ceil(m[3][1]-1)][ceil(m[3][0]+0.1)]!=0)):
+                    top=ceil(m[3][1]-1)
+                    if levels.obstacle[top][ceil(m[3][0]-0.2)]!=0 or levels.obstacle[top][ceil(m[3][0]-0.8)]!=0 or ((levels.back[top][ceil(m[3][0]-0.2)]!=0 or levels.back[top][ceil(m[3][0]-0.8)]!=0) and (levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-0.2)]==0 and levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-0.8)]==0)):
+                        m[3][0]+=m[5]*PCspeed/50
+                    elif levels.obstacle[top+m[7]][ceil(m[3][0]-0.2)]!=0 or levels.obstacle[top+m[7]][ceil(m[3][0]-0.8)]!=0 or ((levels.back[top+m[7]][ceil(m[3][0]-0.2)]!=0 or levels.back[top+m[7]][ceil(m[3][0]-0.8)]!=0) and (levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-0.2)]==0 and levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-0.8)]==0)):
+                        m[3][0]+=m[5]*PCspeed/50
+                    else:
+                        m[4]=180
+                elif not(levels.obstacle[ceil(m[3][1]-2-m[7])][ceil(m[3][0]-0.9)]!=0 or levels.obstacle[ceil(m[3][1]-3-m[7])][ceil(m[3][0]-0.9)]!=0 or (ground==False and levels.obstacle[ceil(m[3][1]-1-m[7])][ceil(m[3][0]-0.9)]!=0)):
+                    m[6]=-0.1
+                    m[3][0]+=m[5]*PCspeed/50
+                else:
+                    m[4]=180
+            elif m[4]==180:
+                if not(levels.obstacle[ceil(m[3][1]-2)][ceil(m[3][0]-1.9)]!=0 or levels.obstacle[ceil(m[3][1]-3)][ceil(m[3][0]-1.9)]!=0 or (ground==False and levels.obstacle[ceil(m[3][1]-1)][ceil(m[3][0]-1.9)]!=0)):
+                    top=ceil(m[3][1]-1)
+                    if levels.obstacle[top][ceil(m[3][0]-2.2)]!=0 or levels.obstacle[top][ceil(m[3][0]-2.8)]!=0 or ((levels.back[top][ceil(m[3][0]-2.2)]!=0 or levels.back[top][ceil(m[3][0]-2.8)]!=0) and (levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-2.2)]==0 and levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-2.8)]==0)):
+                        m[3][0]-=m[5]*PCspeed/50
+                    elif levels.obstacle[top+m[7]][ceil(m[3][0]-2.2)]!=0 or levels.obstacle[top+m[7]][ceil(m[3][0]-2.8)]!=0 or ((levels.back[top+m[7]][ceil(m[3][0]-2.2)]!=0 or levels.back[top+m[7]][ceil(m[3][0]-2.8)]!=0) and (levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-2.2)]==0 and levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-2.8)]==0)):
+                        m[3][0]-=m[5]*PCspeed/50
+                    else:
+                        m[4]=0
+                elif not(levels.obstacle[ceil(m[3][1]-2-m[7])][ceil(m[3][0]-1.9)]!=0 or levels.obstacle[ceil(m[3][1]-3-m[7])][ceil(m[3][0]-1.9)]!=0 or (ground==False and levels.obstacle[ceil(m[3][1]-1-m[7])][ceil(m[3][0]-1.9)]!=0)):
+                    m[6]=-0.1
+                    m[3][0]-=m[5]*PCspeed/50
+                else:
+                    m[4]=0
+
+            if m[6]!=0:
+                tempX=m[3][1]+m[6]
+                if m[6]<0:
+                    m[6]=(tempX-m[3][1])/(levels.gravityAcceleration*1.05)
+                elif m[6]<0.14:
+                    m[6]=(tempX-m[3][1])*levels.gravityAcceleration
+                m[3][1]=tempX
+
 
 class Tuto:
     def __init__(self):
@@ -451,6 +527,7 @@ character=Character()
 sign.read([1,1])
 text=Text()
 tuto=Tuto()
+monster=Monster()
 game=True
 iteration=0
 vitesseAnimation=20
@@ -468,6 +545,8 @@ while game:
     if level==1:
         tuto.draw()
     levels.move(vitessePlayer,player)
+    monster.gravity(PCspeed)
+    monster.draw()
     player.draw(levels)
     character.draw()
     levels.gravity()
