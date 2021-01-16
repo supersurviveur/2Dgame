@@ -244,14 +244,14 @@ class Levels:
                 if self.ground:
                     self.chute=-velocity/5
 
-            if self.chute!=0:
-                tempX=self.playerPos[1]+self.chute
-                self.pos[1]-=self.chute
-                if self.chute<0:
-                    self.chute=(tempX-self.playerPos[1])/(self.gravityAcceleration*1.05)
-                elif self.chute<0.14:
-                    self.chute=(tempX-self.playerPos[1])*self.gravityAcceleration
-                self.playerPos[1]=tempX
+        if self.chute!=0:
+            tempX=self.playerPos[1]+self.chute
+            self.pos[1]-=self.chute
+            if self.chute<0:
+                self.chute=(tempX-self.playerPos[1])/(self.gravityAcceleration*1.05)
+            elif self.chute<0.14:
+                self.chute=(tempX-self.playerPos[1])*self.gravityAcceleration
+            self.playerPos[1]=tempX
 
     def gravity(self):
         self.ground=False
@@ -445,9 +445,6 @@ class Monster:
                 screen.blit(pygame.transform.flip(self.img[current], True, False), ((m[3][0]-1+levels.pos[0])*tileSize,(m[3][1]-1+levels.pos[1])*tileSize-25))
             
     
-    def move(self):
-        pass
-    
     def gravity(self, PCspeed):
         for m in self.monster:
             ground=False
@@ -464,7 +461,7 @@ class Monster:
                     m[6]=0.003
 
             if m[4]==0:
-                if not(levels.obstacle[ceil(m[3][1]-2)][ceil(m[3][0]+0.1)]!=0 or levels.obstacle[ceil(m[3][1]-3)][ceil(m[3][0]+0.1)]!=0 or (ground==False and levels.obstacle[ceil(m[3][1]-1)][ceil(m[3][0]+0.1)]!=0)):
+                if not(levels.obstacle[ceil(m[3][1]-2)][ceil(m[3][0]-0.9)]!=0 or levels.obstacle[ceil(m[3][1]-3)][ceil(m[3][0]-0.9)]!=0 or (ground==False and levels.obstacle[ceil(m[3][1]-1)][ceil(m[3][0]-0.9)]!=0)):
                     top=ceil(m[3][1]-1)
                     if levels.obstacle[top][ceil(m[3][0]-0.2)]!=0 or levels.obstacle[top][ceil(m[3][0]-0.8)]!=0 or ((levels.back[top][ceil(m[3][0]-0.2)]!=0 or levels.back[top][ceil(m[3][0]-0.8)]!=0) and (levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-0.2)]==0 and levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-0.8)]==0)):
                         m[3][0]+=m[5]*PCspeed/50
@@ -473,7 +470,7 @@ class Monster:
                     else:
                         m[4]=180
                 elif not(levels.obstacle[ceil(m[3][1]-2-m[7])][ceil(m[3][0]-0.9)]!=0 or levels.obstacle[ceil(m[3][1]-3-m[7])][ceil(m[3][0]-0.9)]!=0 or (ground==False and levels.obstacle[ceil(m[3][1]-1-m[7])][ceil(m[3][0]-0.9)]!=0)):
-                    m[6]=-0.1
+                    m[6]=-0.06*m[7]
                     m[3][0]+=m[5]*PCspeed/50
                 else:
                     m[4]=180
@@ -487,7 +484,7 @@ class Monster:
                     else:
                         m[4]=0
                 elif not(levels.obstacle[ceil(m[3][1]-2-m[7])][ceil(m[3][0]-1.9)]!=0 or levels.obstacle[ceil(m[3][1]-3-m[7])][ceil(m[3][0]-1.9)]!=0 or (ground==False and levels.obstacle[ceil(m[3][1]-1-m[7])][ceil(m[3][0]-1.9)]!=0)):
-                    m[6]=-0.1
+                    m[6]=-0.06*m[7]
                     m[3][0]-=m[5]*PCspeed/50
                 else:
                     m[4]=0
@@ -499,6 +496,29 @@ class Monster:
                 elif m[6]<0.14:
                     m[6]=(tempX-m[3][1])*levels.gravityAcceleration
                 m[3][1]=tempX
+
+class Camera:
+    def __init__(self):
+        self.animate=False
+        self.iterZoom=0
+        self.iterToMove=50
+    
+    def zoomTalk(self, screen, scale, pos):
+        scale=scale/self.iterToMove*self.iterZoom+1
+        pos[0]=pos[0]/self.iterToMove*self.iterZoom
+        pos[1]=pos[1]/self.iterToMove*self.iterZoom
+        if self.iterZoom!=self.iterToMove:
+            self.iterZoom+=1
+        screen.blit(pygame.transform.scale(screen, (ceil(scale*screenWidth),ceil(scale*screenHeight))), (pos[0],pos[1]))
+    
+    def invertedZoomTalk(self, screen, scale, pos):
+        scale=scale/self.iterToMove*self.iterZoom+1
+        pos[0]=pos[0]/self.iterToMove*self.iterZoom
+        pos[1]=pos[1]/self.iterToMove*self.iterZoom
+        if self.iterZoom!=0:
+            self.iterZoom-=1
+        screen.blit(pygame.transform.scale(screen, (ceil(scale*screenWidth),ceil(scale*screenHeight))), (pos[0],pos[1]))
+         
 
 
 class Tuto:
@@ -528,6 +548,7 @@ sign.read([1,1])
 text=Text()
 tuto=Tuto()
 monster=Monster()
+camera=Camera()
 game=True
 iteration=0
 vitesseAnimation=20
@@ -540,16 +561,16 @@ while game:
     vitessePlayer=0.75*PCspeed
     levels.gravityAcceleration=1.008*PCspeed
     #########################
+    levels.move(vitessePlayer,player)
+    monster.gravity(PCspeed)
     levels.draw()
     text.draw()
     if level==1:
         tuto.draw()
-    levels.move(vitessePlayer,player)
-    monster.gravity(PCspeed)
     monster.draw()
     player.draw(levels)
-    character.draw()
     levels.gravity()
+    character.draw()
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
             game=False
@@ -566,7 +587,13 @@ while game:
         elif event.type == VIDEORESIZE:
             tileSize=ceil(event.w/(screenWidth/tileSize))
             tiles=[pygame.transform.scale(pygame.image.load(i).convert_alpha(), (tileSize+1, tileSize)) for i in tilesList]
-    # screen.blit(pygame.transform.scale(screen, (2*screenWidth,2*screenHeight)), (-screenWidth/2,-screenHeight/2))
+    
+    if player.talk:
+        camera.zoomTalk(screen,0.5,[-screenWidth*0.25,-screenHeight*0.4])
+    elif camera.iterZoom!=0:
+        camera.invertedZoomTalk(screen,0.5,[-screenWidth*0.25,-screenHeight*0.4])
+    
+    
     pygame.display.flip()
     iteration+=1
     if iteration/vitesseAnimation>10:
