@@ -1,109 +1,117 @@
-5276115 function calls (5271736 primitive calls) in 16.907 seconds
+4719290 function calls (4714911 primitive calls) in 20.160 seconds
 
    Ordered by: internal time
 
    ncalls  tottime  percall  cumtime  percall filename:lineno(function)
-  4599730    6.598    0.000    6.598    0.000 {method 'blit' of 'pygame.Surface' objects}
-     4807    6.074    0.001   13.024    0.003 2Dgame.py:183(draw)
-     4807    1.908    0.000    1.908    0.000 {built-in method pygame.display.flip}
-     6162    0.895    0.000    0.895    0.000 {method 'fill' of 'pygame.Surface' objects}
-     4807    0.304    0.000    0.304    0.000 {built-in method pygame.event.get}
-        1    0.127    0.127    0.127    0.127 {built-in method pygame.base.init}
-     1581    0.084    0.000    0.084    0.000 {built-in method nt.stat}
-     4807    0.082    0.000    0.331    0.000 2Dgame.py:411(draw)
-        1    0.074    0.074   16.907   16.907 2Dgame.py:2(<module>)
-   270500    0.072    0.000    0.072    0.000 {built-in method math.ceil}
-     4807    0.072    0.000    0.344    0.000 2Dgame.py:354(draw)
-     4807    0.070    0.000    0.070    0.000 {built-in method pygame.draw.rect}
-     6112    0.062    0.000    0.062    0.000 {built-in method pygame.transform.flip}
-     4807    0.042    0.000    0.281    0.000 2Dgame.py:301(draw)
-     4807    0.038    0.000    0.096    0.000 2Dgame.py:251(gravity)
-     3858    0.036    0.000    0.036    0.000 {method 'render' of 'pygame.font.Font' objects}
-    34/32    0.030    0.001    0.032    0.001 {built-in method _imp.create_dynamic}
-     4807    0.028    0.000    0.035    0.000 2Dgame.py:205(move)
-        1    0.022    0.022    0.292    0.292 {built-in method pygame.display.set_mode}
-     4807    0.018    0.000    0.031    0.000 2Dgame.py:374(isAtPos)
-      176    0.018    0.000    0.018    0.000 {built-in method nt.listdir}
-      120    0.016    0.000    0.016    0.000 {built-in method pygame.imageext.load_extended}
-      141    0.011    0.000    0.011    0.000 {built-in method io.open_code}
-    66341    0.011    0.000    0.011    0.000 {method 'get_rect' of 'pygame.Surface' objects}
+  4094130    6.950    0.000    6.950    0.000 {method 'blit' of 'pygame.Surface' objects}
+     5215    6.124    0.001   13.059    0.003 2Dgame.py:188(draw)
+     5215    2.056    0.000    2.056    0.000 {built-in method pygame.display.flip}
+      770    1.573    0.002    1.573    0.002 {built-in method pygame.transform.scale}
+     5765    0.886    0.000    0.886    0.000 {method 'fill' of 'pygame.Surface' objects}
+    34/32    0.476    0.014    0.484    0.015 {built-in method _imp.create_dynamic}
+     5215    0.270    0.000    0.270    0.000 {built-in method pygame.event.get}
+      141    0.200    0.001    0.200    0.001 {built-in method io.open_code}
+      548    0.176    0.000    1.854    0.003 2Dgame.py:507(zoomTalk)
+        1    0.166    0.166    0.166    0.166 {built-in method pygame.base.init}
+      122    0.134    0.001    0.134    0.001 {built-in method pygame.imageext.load_extended}
+        1    0.116    0.116   20.160   20.160 2Dgame.py:2(<module>)
+       23    0.099    0.004    0.099    0.004 {built-in method io.open}
+     1581    0.085    0.000    0.085    0.000 {built-in method nt.stat}
+     5215    0.081    0.000    0.341    0.000 2Dgame.py:425(draw)
+     8414    0.078    0.000    0.078    0.000 {built-in method pygame.transform.flip}
+     5215    0.071    0.000    0.071    0.000 {built-in method pygame.draw.rect}
+   187112    0.059    0.000    0.059    0.000 {built-in method math.ceil}
+     5215    0.044    0.000    0.120    0.000 2Dgame.py:257(gravity)
+     5215    0.041    0.000    0.190    0.000 2Dgame.py:361(draw)
+     5215    0.039    0.000    0.280    0.000 2Dgame.py:307(draw)
+     5215    0.035    0.000    0.046    0.000 2Dgame.py:211(move)
+      100    0.026    0.000    0.273    0.003 2Dgame.py:515(invertedZoomTalk)
+     5215    0.025    0.000    0.107    0.000 2Dgame.py:440(draw)
+     2440    0.025    0.000    0.025    0.000 {method 'render' of 'pygame.font.Font' objects}
+     5215    0.024    0.000    0.036    0.000 2Dgame.py:449(gravity)
+     5215    0.023    0.000    0.042    0.000 2Dgame.py:384(isAtPos)
+        1    0.021    0.021    0.470    0.470 {built-in method pygame.display.set_mode}
+      176    0.020    0.000    0.020    0.000 {built-in method nt.listdir}
+     2092    0.013    0.000    0.013    0.000 {built-in method builtins.round}
        84    0.011    0.000    0.011    0.000 {built-in method marshal.loads}
-      161    0.009    0.000    0.009    0.000 {method 'read' of '_io.BufferedReader' objects}
-       22    0.008    0.000    0.008    0.000 {built-in method io.open}
+     5215    0.010    0.000    0.013    0.000 2Dgame.py:531(draw)
+    70227    0.010    0.000    0.010    0.000 {method 'get_rect' of 'pygame.Surface' objects}
    469/82    0.008    0.000    0.024    0.000 sre_parse.py:493(_parse)
-    32313    0.006    0.000    0.006    0.000 {method 'get' of 'dict' objects}
-    14422    0.005    0.000    0.005    0.000 {built-in method time.time}
-     3425    0.005    0.000    0.006    0.000 ntpath.py:124(splitdrive)
-  328/325    0.004    0.000    0.029    0.000 {built-in method builtins.__build_class__}
+      163    0.008    0.000    0.008    0.000 {method 'read' of '_io.BufferedReader' objects}
+    37883    0.007    0.000    0.007    0.000 {method 'get' of 'dict' objects}
+    15646    0.006    0.000    0.006    0.000 {built-in method time.time}
+        5    0.005    0.001    0.005    0.001 decoder.py:343(raw_decode)
+     3433    0.005    0.000    0.006    0.000 ntpath.py:124(splitdrive)
+  331/328    0.005    0.000    0.029    0.000 {built-in method builtins.__build_class__}
       594    0.004    0.000    0.014    0.000 version.py:205(_legacy_cmpkey)
      7320    0.004    0.000    0.008    0.000 version.py:187(_parse_version_parts)
-      378    0.004    0.000    0.061    0.000 <frozen importlib._bootstrap_external>:1431(find_spec)
+      378    0.004    0.000    0.060    0.000 <frozen importlib._bootstrap_external>:1431(find_spec)
     12833    0.004    0.000    0.004    0.000 sre_parse.py:233(__next)
-   790/78    0.004    0.000    0.009    0.000 sre_compile.py:71(_compile)
-        4    0.003    0.001    0.003    0.001 decoder.py:343(raw_decode)
-    11538    0.003    0.000    0.007    0.000 sre_parse.py:254(get)
-     1444    0.003    0.000    0.008    0.000 ntpath.py:77(join)
+   790/78    0.004    0.000    0.010    0.000 sre_compile.py:71(_compile)
+    11538    0.003    0.000    0.006    0.000 sre_parse.py:254(get)
        28    0.003    0.000    0.003    0.000 {built-in method nt._getfinalpathname}
+     1448    0.003    0.000    0.008    0.000 ntpath.py:77(join)
       900    0.003    0.000    0.007    0.000 version.py:271(__init__)
-      120    0.003    0.000    0.003    0.000 {built-in method pygame.transform.scale}
-      405    0.003    0.000    0.003    0.000 {built-in method builtins.round}
-    103/1    0.002    0.000   16.907   16.907 {built-in method builtins.exec}
-      141    0.002    0.000    0.022    0.000 <frozen importlib._bootstrap_external>:969(get_data)
-      594    0.002    0.000    0.002    0.000 {method 'split' of 're.Pattern' objects}
+      141    0.003    0.000    0.209    0.001 <frozen importlib._bootstrap_external>:969(get_data)
       330    0.002    0.000    0.003    0.000 sre_compile.py:276(_optimize_charset)
         3    0.002    0.001    0.003    0.001 {method 'readlines' of '_io._IOBase' objects}
-      206    0.002    0.000    0.007    0.000 2Dgame.py:335(read)
-    18085    0.002    0.000    0.002    0.000 {built-in method builtins.isinstance}
-   319/78    0.002    0.000    0.024    0.000 sre_parse.py:435(_parse_sub)
-     2065    0.002    0.000    0.002    0.000 {method 'split' of 'str' objects}
-      900    0.002    0.000    0.002    0.000 {method 'search' of 're.Pattern' objects}
-     2199    0.002    0.000    0.004    0.000 <frozen importlib._bootstrap_external>:62(_path_join)
-      394    0.002    0.000    0.003    0.000 ntpath.py:180(split)
+      594    0.002    0.000    0.002    0.000 {method 'split' of 're.Pattern' objects}
+    18098    0.002    0.000    0.002    0.000 {built-in method builtins.isinstance}
+    103/1    0.002    0.000   20.160   20.160 {built-in method builtins.exec}
     18378    0.002    0.000    0.002    0.000 {method 'append' of 'list' objects}
-     8216    0.002    0.000    0.002    0.000 {method 'startswith' of 'str' objects}
+      900    0.002    0.000    0.002    0.000 {method 'search' of 're.Pattern' objects}
      5331    0.002    0.000    0.002    0.000 sre_parse.py:164(__getitem__)
-  926/223    0.001    0.000    0.002    0.000 sre_parse.py:174(getwidth)
-14089/13178    0.001    0.000    0.002    0.000 {built-in method builtins.len}
-       84    0.001    0.000    0.043    0.001 <frozen importlib._bootstrap_external>:849(get_code)
+      394    0.002    0.000    0.003    0.000 ntpath.py:180(split)
+     8217    0.002    0.000    0.002    0.000 {method 'startswith' of 'str' objects}
+  926/223    0.002    0.000    0.002    0.000 sre_parse.py:174(getwidth)
+       84    0.002    0.000    0.231    0.003 <frozen importlib._bootstrap_external>:849(get_code)
+     2199    0.001    0.000    0.004    0.000 <frozen importlib._bootstrap_external>:62(_path_join)
+14074/13163    0.001    0.000    0.002    0.000 {built-in method builtins.len}
      2199    0.001    0.000    0.002    0.000 <frozen importlib._bootstrap_external>:64(<listcomp>)
-     1070    0.001    0.000    0.018    0.000 __init__.py:2064(dist_factory)
-    142/5    0.001    0.000    0.324    0.065 <frozen importlib._bootstrap>:986(_find_and_load)
-     1355    0.001    0.000    0.001    0.000 {built-in method math.floor}
-      471    0.001    0.000    0.003    0.000 copy.py:66(copy)
-2950/2946    0.001    0.000    0.002    0.000 {method 'join' of 'str' objects}
-      139    0.001    0.000    0.046    0.000 <frozen importlib._bootstrap>:890(_find_spec)
+    142/5    0.001    0.000    1.024    0.205 <frozen importlib._bootstrap>:986(_find_and_load)
+     1074    0.001    0.000    0.019    0.000 __init__.py:2064(dist_factory)
      2088    0.001    0.000    0.001    0.000 {built-in method builtins.getattr}
-      335    0.001    0.000    0.001    0.000 pyparsing.py:1144(__init__)
-      292    0.001    0.000    0.036    0.000 __init__.py:2115(distributions_from_metadata)
+   319/78    0.001    0.000    0.024    0.000 sre_parse.py:435(_parse_sub)
+      471    0.001    0.000    0.003    0.000 copy.py:66(copy)
+     1260    0.001    0.000    0.001    0.000 {method 'split' of 'str' objects}
+      139    0.001    0.000    0.045    0.000 <frozen importlib._bootstrap>:890(_find_spec)
+        2    0.001    0.001    0.001    0.001 {built-in method builtins.print}
+2950/2946    0.001    0.000    0.002    0.000 {method 'join' of 'str' objects}
+      292    0.001    0.000    0.087    0.000 __init__.py:2115(distributions_from_metadata)
       306    0.001    0.000    0.001    0.000 version.py:474(_cmpkey)
-      146    0.001    0.000    0.012    0.000 __init__.py:2573(from_location)
-       18    0.001    0.000    0.003    0.000 __init__.py:313(namedtuple)
-      228    0.001    0.000    0.038    0.000 re.py:289(_compile)
+      228    0.001    0.000    0.039    0.000 re.py:289(_compile)
+      146    0.001    0.000    0.061    0.000 __init__.py:2573(from_location)
+       17    0.001    0.000    0.038    0.002 {built-in method builtins.sorted}
       250    0.001    0.000    0.002    0.000 <frozen importlib._bootstrap>:157(_get_module_lock)
+       18    0.001    0.000    0.003    0.000 __init__.py:313(namedtuple)
+      392    0.001    0.000    0.001    0.000 sre_parse.py:168(__setitem__)
       127    0.001    0.000    0.043    0.000 <frozen importlib._bootstrap_external>:1302(_get_spec)
+      335    0.001    0.000    0.001    0.000 pyparsing.py:1144(__init__)
       740    0.001    0.000    0.019    0.000 version.py:48(parse)
      1838    0.001    0.000    0.001    0.000 version.py:98(_compare)
-     4960    0.001    0.000    0.001    0.000 {method 'rstrip' of 'str' objects}
-       17    0.001    0.000    0.038    0.002 {built-in method builtins.sorted}
-      931    0.001    0.000    0.001    0.000 {built-in method __new__ of type object at 0x00007FFCA743A810}
-     3219    0.001    0.000    0.001    0.000 {method 'group' of 're.Match' objects}
-      130    0.001    0.000    0.003    0.000 <frozen importlib._bootstrap>:477(_init_module_attrs)
-     6125    0.001    0.000    0.001    0.000 {built-in method nt.fspath}
      1057    0.001    0.000    0.056    0.000 <frozen importlib._bootstrap_external>:80(_path_stat)
-      168    0.001    0.000    0.002    0.000 <frozen importlib._bootstrap_external>:294(cache_from_source)
-    190/6    0.001    0.000    0.320    0.053 <frozen importlib._bootstrap>:211(_call_with_frames_removed)
-    133/5    0.001    0.000    0.322    0.064 <frozen importlib._bootstrap>:650(_load_unlocked)
-     3745    0.001    0.000    0.001    0.000 {method 'replace' of 'str' objects}
-      471    0.001    0.000    0.001    0.000 copy.py:258(_reconstruct)
-     2722    0.001    0.000    0.001    0.000 sre_parse.py:249(match)
-      162    0.001    0.000    0.015    0.000 __init__.py:2049(<genexpr>)
-    142/5    0.001    0.000    0.323    0.065 <frozen importlib._bootstrap>:956(_find_and_load_unlocked)
-     2374    0.001    0.000    0.001    0.000 {method 'endswith' of 'str' objects}
-      160    0.001    0.000    0.001    0.000 version.py:305(__str__)
-      940    0.001    0.000    0.006    0.000 __init__.py:2041(<genexpr>)
+      130    0.001    0.000    0.003    0.000 <frozen importlib._bootstrap>:477(_init_module_attrs)
+    133/5    0.001    0.000    1.021    0.204 <frozen importlib._bootstrap>:650(_load_unlocked)
+     3219    0.001    0.000    0.001    0.000 {method 'group' of 're.Match' objects}
+      931    0.001    0.000    0.001    0.000 {built-in method __new__ of type object at 0x00007FFEDC08A810}
+       28    0.001    0.000    0.001    0.000 {built-in method _codecs.charmap_decode}
+     6137    0.001    0.000    0.001    0.000 {built-in method nt.fspath}
       250    0.001    0.000    0.001    0.000 <frozen importlib._bootstrap>:78(acquire)
+      168    0.001    0.000    0.002    0.000 <frozen importlib._bootstrap_external>:294(cache_from_source)
+      162    0.001    0.000    0.015    0.000 __init__.py:2049(<genexpr>)
+      471    0.001    0.000    0.001    0.000 copy.py:258(_reconstruct)
+     2382    0.001    0.000    0.001    0.000 {method 'endswith' of 'str' objects}
+     4960    0.001    0.000    0.001    0.000 {method 'rstrip' of 'str' objects}
+      594    0.001    0.000    0.014    0.000 version.py:107(__init__)
+      550    0.001    0.000    0.001    0.000 {built-in method math.floor}
+    142/5    0.001    0.000    1.023    0.205 <frozen importlib._bootstrap>:956(_find_and_load_unlocked)
+     2722    0.001    0.000    0.001    0.000 sre_parse.py:249(match)
+     3753    0.001    0.000    0.001    0.000 {method 'replace' of 'str' objects}
+      160    0.001    0.000    0.001    0.000 version.py:305(__str__)
      1994    0.001    0.000    0.001    0.000 <frozen importlib._bootstrap>:222(_verbose_message)
       582    0.001    0.000    0.024    0.000 <frozen importlib._bootstrap_external>:90(_path_is_mode_type)
+      133    0.001    0.000    0.001    0.000 pyparsing.py:3260(__init__)
+      146    0.001    0.000    0.001    0.000 __init__.py:669(add)
       288    0.001    0.000    0.001    0.000 {built-in method _thread.allocate_lock}
-      168    0.001    0.000    0.001    0.000 <frozen importlib._bootstrap_external>:68(_path_split)
-      594    0.001    0.000    0.014    0.000 version.py:107(__init__)
+      944    0.001    0.000    0.005    0.000 __init__.py:2041(<genexpr>)
+      250    0.001    0.000    0.001    0.000 <frozen importlib._bootstrap>:103(release)

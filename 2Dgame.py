@@ -26,6 +26,7 @@ police40 = pygame.font.Font("./assets/police.otf", 40)
 #LARGEUR -> [0] HAUTEUR -> [1]#
 ###############################
 lifeGradient=[(255,0,0),(255,255,0),(0,255,0)]
+clock=pygame.time.Clock()
 tileSize=48
 tilesList=[
     "./textures/air.png",
@@ -162,7 +163,7 @@ snake=[pygame.transform.scale(pygame.image.load(i[0]).convert_alpha(), (ceil(til
 heart=pygame.transform.scale(pygame.image.load("./textures/utils/heart.png").convert_alpha(), [52,48])
 lifeBorder=pygame.transform.scale(pygame.image.load("./textures/utils/border.png").convert_alpha(), [208,36])
 level=1
-name="vous"
+name="vous".upper()
 
 class Levels:
     def __init__(self):
@@ -189,8 +190,9 @@ class Levels:
         screen.fill((38,167,173))
         pos1=self.pos[0]*tileSize
         pos2=self.pos[1]*tileSize
+        ran=range(ceil(self.pos[0]-1),ceil(screenWidth//tileSize-self.pos[0]+1))
         for i in range(ceil(self.pos[1]*-1-1),ceil(screenHeight//tileSize-self.pos[1]+1)):
-            for i2 in range(ceil(self.pos[0]-1),ceil(screenWidth//tileSize-self.pos[0]+1)):
+            for i2 in ran:
                 pos=[pos1+tileSize*i2,pos2+tileSize*i]
                 tBack=self.back[i][i2]
                 tObstacle=self.obstacle[i][i2]
@@ -252,6 +254,13 @@ class Levels:
             elif self.chute<0.14:
                 self.chute=(tempX-self.playerPos[1])*self.gravityAcceleration
             self.playerPos[1]=tempX
+        
+        temp=perso[0].get_rect()
+        temp.top=(levels.playerPos[1]+levels.pos[1])*tileSize-temp.height-5
+        temp.left=(levels.playerPos[0]+levels.pos[0])*tileSize-temp.width+15
+        temp.width-=10
+        temp.height+=5
+        player.rect=temp
 
     def gravity(self):
         self.ground=False
@@ -277,6 +286,7 @@ class Levels:
                     sign.read([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.8)])
             
             character.isAtPos([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.8)])
+            monster.isAtPos([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.8)])
         except:
             pass
         if self.ground or self.ladder:
@@ -302,6 +312,11 @@ class Player:
         self.move=False
         self.climb=False
         self.talk=False
+        self.invincible=False
+        temp=perso[0].get_rect()
+        temp.top=levels.playerPos[1]*tileSize
+        temp.left=levels.playerPos[0]*tileSize
+        self.rect=temp
 
     def draw(self,levels):
         if self.move and levels.ground:
@@ -435,6 +450,12 @@ class Monster:
             s+=i
         self.monster=[i for i in json.loads(s)['monster']]
         self.img=snake
+        self.rect=[]
+        for s in self.monster:
+            temp=snake[0].get_rect()
+            temp.top=s[3][1]*tileSize
+            temp.left=s[3][0]*tileSize
+            self.rect.append(temp)
     
     def draw(self):
         for m in self.monster:
@@ -446,6 +467,7 @@ class Monster:
             
     
     def gravity(self, PCspeed):
+        tempList=[]
         for m in self.monster:
             ground=False
             try:
@@ -496,6 +518,23 @@ class Monster:
                 elif m[6]<0.14:
                     m[6]=(tempX-m[3][1])*levels.gravityAcceleration
                 m[3][1]=tempX
+
+            temp=snake[0].get_rect()
+            temp.top=(m[3][1]+levels.pos[1])*tileSize-temp.height+25
+            temp.left=(m[3][0]+levels.pos[0])*tileSize-temp.width+15
+            temp.height-=25
+            tempList.append(temp)
+        self.rect.clear()
+        for i in tempList:
+            self.rect.append(i)
+    
+    def isAtPos(self,pos):
+        if player.invincible==False:
+            current=ceil(iteration/vitesseAnimation)%2
+            for i,s in enumerate(self.monster):
+                if self.rect[i].colliderect(player.rect):
+                    player.life-=s[2]
+                    player.invincible=True
 
 class Camera:
     def __init__(self):
@@ -595,6 +634,7 @@ while game:
     
     
     pygame.display.flip()
+    clock.tick(500)
     iteration+=1
     if iteration/vitesseAnimation>10:
         iteration=0
