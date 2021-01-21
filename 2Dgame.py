@@ -244,7 +244,7 @@ class Levels:
                     player.climb=True
             if self.pressed.get(pygame.K_SPACE):
                 if self.ground:
-                    self.chute=-velocity/5
+                    self.chute=-0.75/5
 
         if self.chute!=0:
             tempX=self.playerPos[1]+self.chute
@@ -450,20 +450,26 @@ class Monster:
             s+=i
         self.monster=[i for i in json.loads(s)['monster']]
         self.img=snake
+        self.iter=0
         self.rect=[]
         for s in self.monster:
             temp=snake[0].get_rect()
             temp.top=s[3][1]*tileSize
             temp.left=s[3][0]*tileSize
             self.rect.append(temp)
+        self.current=0
     
-    def draw(self):
+    def draw(self, vitesseAnimation):
+        if self.iter>3000:
+            self.current=(self.current+1)%2
+            self.iter=0
+        else:
+            self.iter+=vitesseAnimation
         for m in self.monster:
-            current=ceil(iteration/vitesseAnimation)%2
             if m[4]==0:
-                screen.blit(self.img[current], ((m[3][0]-1+levels.pos[0])*tileSize,(m[3][1]-1+levels.pos[1])*tileSize-25))
+                screen.blit(self.img[self.current], ((m[3][0]-1+levels.pos[0])*tileSize,(m[3][1]-1+levels.pos[1])*tileSize-25))
             else:
-                screen.blit(pygame.transform.flip(self.img[current], True, False), ((m[3][0]-1+levels.pos[0])*tileSize,(m[3][1]-1+levels.pos[1])*tileSize-25))
+                screen.blit(pygame.transform.flip(self.img[self.current], True, False), ((m[3][0]-1+levels.pos[0])*tileSize,(m[3][1]-1+levels.pos[1])*tileSize-25))
             
     
     def gravity(self, PCspeed):
@@ -486,28 +492,28 @@ class Monster:
                 if not(levels.obstacle[ceil(m[3][1]-2)][ceil(m[3][0]-0.9)]!=0 or levels.obstacle[ceil(m[3][1]-3)][ceil(m[3][0]-0.9)]!=0 or (ground==False and levels.obstacle[ceil(m[3][1]-1)][ceil(m[3][0]-0.9)]!=0)):
                     top=ceil(m[3][1]-1)
                     if levels.obstacle[top][ceil(m[3][0]-0.2)]!=0 or levels.obstacle[top][ceil(m[3][0]-0.8)]!=0 or ((levels.back[top][ceil(m[3][0]-0.2)]!=0 or levels.back[top][ceil(m[3][0]-0.8)]!=0) and (levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-0.2)]==0 and levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-0.8)]==0)):
-                        m[3][0]+=m[5]*PCspeed/50
+                        m[3][0]+=m[5]*(PCspeed/20)
                     elif levels.obstacle[top+m[7]][ceil(m[3][0]-0.2)]!=0 or levels.obstacle[top+m[7]][ceil(m[3][0]-0.8)]!=0 or ((levels.back[top+m[7]][ceil(m[3][0]-0.2)]!=0 or levels.back[top+m[7]][ceil(m[3][0]-0.8)]!=0) and (levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-0.2)]==0 and levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-0.8)]==0)):
-                        m[3][0]+=m[5]*PCspeed/50
+                        m[3][0]+=m[5]*(PCspeed/20)
                     else:
                         m[4]=180
                 elif not(levels.obstacle[ceil(m[3][1]-2-m[7])][ceil(m[3][0]-0.9)]!=0 or levels.obstacle[ceil(m[3][1]-3-m[7])][ceil(m[3][0]-0.9)]!=0 or (ground==False and levels.obstacle[ceil(m[3][1]-1-m[7])][ceil(m[3][0]-0.9)]!=0)):
                     m[6]=-0.06*m[7]
-                    m[3][0]+=m[5]*PCspeed/50
+                    m[3][0]+=m[5]*(PCspeed/20)
                 else:
                     m[4]=180
             elif m[4]==180:
                 if not(levels.obstacle[ceil(m[3][1]-2)][ceil(m[3][0]-1.9)]!=0 or levels.obstacle[ceil(m[3][1]-3)][ceil(m[3][0]-1.9)]!=0 or (ground==False and levels.obstacle[ceil(m[3][1]-1)][ceil(m[3][0]-1.9)]!=0)):
                     top=ceil(m[3][1]-1)
                     if levels.obstacle[top][ceil(m[3][0]-2.2)]!=0 or levels.obstacle[top][ceil(m[3][0]-2.8)]!=0 or ((levels.back[top][ceil(m[3][0]-2.2)]!=0 or levels.back[top][ceil(m[3][0]-2.8)]!=0) and (levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-2.2)]==0 and levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-2.8)]==0)):
-                        m[3][0]-=m[5]*PCspeed/50
+                        m[3][0]-=m[5]*(PCspeed/20)
                     elif levels.obstacle[top+m[7]][ceil(m[3][0]-2.2)]!=0 or levels.obstacle[top+m[7]][ceil(m[3][0]-2.8)]!=0 or ((levels.back[top+m[7]][ceil(m[3][0]-2.2)]!=0 or levels.back[top+m[7]][ceil(m[3][0]-2.8)]!=0) and (levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-2.2)]==0 and levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-2.8)]==0)):
-                        m[3][0]-=m[5]*PCspeed/50
+                        m[3][0]-=m[5]*(PCspeed/20)
                     else:
                         m[4]=0
                 elif not(levels.obstacle[ceil(m[3][1]-2-m[7])][ceil(m[3][0]-1.9)]!=0 or levels.obstacle[ceil(m[3][1]-3-m[7])][ceil(m[3][0]-1.9)]!=0 or (ground==False and levels.obstacle[ceil(m[3][1]-1-m[7])][ceil(m[3][0]-1.9)]!=0)):
                     m[6]=-0.06*m[7]
-                    m[3][0]-=m[5]*PCspeed/50
+                    m[3][0]-=m[5]*(PCspeed/20)
                 else:
                     m[4]=0
 
@@ -591,14 +597,14 @@ camera=Camera()
 game=True
 iteration=0
 vitesseAnimation=20
-timeStamp=time.time()
+timeStamp=time.time()-1
 while game:
-    PCspeed=time.time()-timeStamp+1
+    PCspeed=(time.time()-timeStamp)*100
     timeStamp=time.time()
     #VARIABLE WITH TIMESTAMP#
     vitesseAnimation=100*PCspeed
-    vitessePlayer=0.75*PCspeed
-    levels.gravityAcceleration=1.008*PCspeed
+    vitessePlayer=2*PCspeed
+    levels.gravityAcceleration=1.008
     #########################
     levels.move(vitessePlayer,player)
     monster.gravity(PCspeed)
@@ -606,7 +612,7 @@ while game:
     text.draw()
     if level==1:
         tuto.draw()
-    monster.draw()
+    monster.draw(vitesseAnimation)
     player.draw(levels)
     levels.gravity()
     character.draw()
@@ -634,7 +640,6 @@ while game:
     
     
     pygame.display.flip()
-    clock.tick(500)
     iteration+=1
     if iteration/vitesseAnimation>10:
         iteration=0
