@@ -317,22 +317,36 @@ class Player:
         temp.top=levels.playerPos[1]*tileSize
         temp.left=levels.playerPos[0]*tileSize
         self.rect=temp
+        self.iter=0
+        self.current=0
 
     def draw(self,levels):
         if self.move and levels.ground:
-            current=ceil(iteration/vitesseAnimation)%4+2
+            if self.iter>2000:
+                self.current=(self.current+1)%4+2
+                self.iter=0
+            else:
+                self.iter+=vitesseAnimation
         elif self.climb:
-            current=ceil(iteration/vitesseAnimation)%4+6
+            if self.iter>2000:
+                self.current=(self.current+1)%4+6
+                self.iter=0
+            else:
+                self.iter+=vitesseAnimation
         elif levels.ladder:
-            current=6
+            self.current=6
         elif levels.ground:
-            current=ceil(iteration/vitesseAnimation)%2
+            if self.iter>2000:
+                self.current=(self.current+1)%2
+                self.iter=0
+            else:
+                self.iter+=vitesseAnimation
         else:
-            current=0
+            self.current=0
         if self.lastDirection==0:
-            screen.blit(self.img[current], ((levels.playerPos[0]-1+levels.pos[0])*tileSize,(levels.playerPos[1]-1+levels.pos[1])*tileSize-25))
+            screen.blit(self.img[self.current], ((levels.playerPos[0]-1+levels.pos[0])*tileSize,(levels.playerPos[1]-1+levels.pos[1])*tileSize-25))
         else:
-            screen.blit(pygame.transform.flip(self.img[current], True, False), ((levels.playerPos[0]-1+levels.pos[0])*tileSize,(levels.playerPos[1]-1+levels.pos[1])*tileSize-25))
+            screen.blit(pygame.transform.flip(self.img[self.current], True, False), ((levels.playerPos[0]-1+levels.pos[0])*tileSize,(levels.playerPos[1]-1+levels.pos[1])*tileSize-25))
         
         lifePercent=self.life/self.maxLife*3
         if lifePercent<1:
@@ -371,14 +385,20 @@ class Character:
         self.img=talk
         self.talk=False
         self.name=['noname','noname']
+        self.iter=0
+        self.current=0
     
     def draw(self):
-        current=ceil(iteration/vitesseAnimation)%2
+        if self.iter>3000:
+            self.current=(self.current+1)%2
+            self.iter=0
+        else:
+            self.iter+=vitesseAnimation
         for s in self.character:
             if s[0]<levels.playerPos[0]-1:
-                screen.blit(self.img[current], ((s[0]+levels.pos[0])*tileSize,(s[1]+levels.pos[1])*tileSize))
+                screen.blit(self.img[self.current], ((s[0]+levels.pos[0])*tileSize,(s[1]+levels.pos[1])*tileSize))
             else:
-                screen.blit(pygame.transform.flip(self.img[current], True, False), ((s[0]+levels.pos[0])*tileSize,(s[1]+levels.pos[1])*tileSize))
+                screen.blit(pygame.transform.flip(self.img[self.current], True, False), ((s[0]+levels.pos[0])*tileSize,(s[1]+levels.pos[1])*tileSize))
         if self.talk!=False:
             s=pygame.Surface((screenWidth/2,screenHeight/6), pygame.SRCALPHA)
             s.fill((130,130,130,200))
