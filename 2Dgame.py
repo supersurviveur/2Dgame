@@ -244,7 +244,7 @@ class Levels:
                     player.climb=True
             if self.pressed.get(pygame.K_SPACE):
                 if self.ground:
-                    self.chute=-0.75/3
+                    self.chute=-0.75/3*PCspeed*3
 
         if self.chute!=0:
             tempX=self.playerPos[1]+self.chute
@@ -253,6 +253,8 @@ class Levels:
                 self.chute=(tempX-self.playerPos[1])/(self.gravityAcceleration*1.05)
             elif self.chute<0.14:
                 self.chute=(tempX-self.playerPos[1])*self.gravityAcceleration
+            else:
+                self.chute=0.14
             self.playerPos[1]=self.playerPos[1]+self.chute*PCspeed*2.4
         
         temp=perso[0].get_rect()
