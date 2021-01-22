@@ -183,6 +183,8 @@ class Levels:
         self.chute=0
         self.ground=True
         self.gravityAcceleration=1.06
+        self.jumpVelocity=-1
+        self.isJump=False
         self.ladder=False
         self.talk=False
 
@@ -244,18 +246,22 @@ class Levels:
                     player.climb=True
             if self.pressed.get(pygame.K_SPACE):
                 if self.ground:
-                    self.chute=-0.75/3
+                    self.isJump=True
+                    self.jumpVelocity=16
 
-        if self.chute!=0:
-            tempX=self.playerPos[1]+self.chute
-            if self.chute<0:
-                self.chute=(tempX-self.playerPos[1])/(self.gravityAcceleration*1.05)
-            elif self.chute<0.14:
-                self.chute=(tempX-self.playerPos[1])*self.gravityAcceleration
+        if self.isJump:
+            if self.jumpVelocity<0:
+                F = (0.0005 * (self.jumpVelocity**2))
             else:
-                self.chute=0.14
-            self.playerPos[1]+=self.chute*PCspeed*2.4
-            self.pos[1]-=self.chute*PCspeed*2.4
+                F = -(0.0005 * (self.jumpVelocity**2))
+            if self.jumpVelocity<-12:
+                self.jumpVelocity+=0.2
+            self.jumpVelocity-=0.2
+            self.playerPos[1]+=F
+            self.pos[1]-=F
+        else:
+            self.jumpVelocity=-2
+
         
         temp=perso[0].get_rect()
         temp.top=(levels.playerPos[1]+levels.pos[1])*tileSize-temp.height-5
@@ -292,10 +298,9 @@ class Levels:
         except:
             pass
         if self.ground or self.ladder:
-            self.chute=0
+            self.isJump=False
         else:
-            if round(self.chute,2)==0 and self.chute<=0:
-                self.chute=0.005
+            self.isJump=True
             
     def water(self):
         if level==1:
@@ -324,13 +329,13 @@ class Player:
 
     def draw(self,levels):
         if self.move and levels.ground:
-            if self.iter>2000:
+            if self.iter>3000:
                 self.current=(self.current+1)%4+2
                 self.iter=0
             else:
                 self.iter+=vitesseAnimation
         elif self.climb:
-            if self.iter>2000:
+            if self.iter>3000:
                 self.current=(self.current+1)%4+6
                 self.iter=0
             else:
@@ -338,7 +343,7 @@ class Player:
         elif levels.ladder:
             self.current=6
         elif levels.ground:
-            if self.iter>2000:
+            if self.iter>3000:
                 self.current=(self.current+1)%2
                 self.iter=0
             else:
