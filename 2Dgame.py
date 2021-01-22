@@ -182,7 +182,6 @@ class Levels:
         self.pressed={}
         self.chute=0
         self.ground=True
-        self.gravityAcceleration=1.06
         self.jumpVelocity=-1
         self.isJump=False
         self.ladder=False
@@ -255,10 +254,10 @@ class Levels:
             else:
                 F = -(0.0005 * (self.jumpVelocity**2))
             if self.jumpVelocity<-12:
-                self.jumpVelocity+=0.2
-            self.jumpVelocity-=0.2
-            self.playerPos[1]+=F
-            self.pos[1]-=F
+                self.jumpVelocity+=0.2*PCspeed*1.4
+            self.jumpVelocity-=0.2*PCspeed*1.4
+            self.playerPos[1]+=F*PCspeed*1.4
+            self.pos[1]-=F*PCspeed*1.4
         else:
             self.jumpVelocity=-2
 
@@ -297,7 +296,7 @@ class Levels:
             monster.isAtPos([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.8)])
         except:
             pass
-        if self.ground or self.ladder:
+        if (self.ground and self.jumpVelocity<=0) or self.ladder:
             self.isJump=False
         else:
             self.isJump=True
@@ -485,6 +484,8 @@ class Monster:
             temp.left=s[3][0]*tileSize
             self.rect.append(temp)
         self.current=0
+        self.jumpVelocity=-1
+        self.isJump=False
     
     def draw(self, vitesseAnimation):
         if self.iter>3000:
@@ -509,23 +510,23 @@ class Monster:
                     ground=True
             except:
                 pass
-            if ground:
-                m[6]=0
+            if ground and m[8]<=0:
+                m[7]=False
             else:
-                if round(m[6],2)==0 and m[6]<=0:
-                    m[6]=0.003
+                m[7]=True
 
             if m[4]==0:
                 if not(levels.obstacle[ceil(m[3][1]-2)][ceil(m[3][0]-0.9)]!=0 or levels.obstacle[ceil(m[3][1]-3)][ceil(m[3][0]-0.9)]!=0 or (ground==False and levels.obstacle[ceil(m[3][1]-1)][ceil(m[3][0]-0.9)]!=0)):
                     top=ceil(m[3][1]-1)
                     if levels.obstacle[top][ceil(m[3][0]-0.2)]!=0 or levels.obstacle[top][ceil(m[3][0]-0.8)]!=0 or ((levels.back[top][ceil(m[3][0]-0.2)]!=0 or levels.back[top][ceil(m[3][0]-0.8)]!=0) and (levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-0.2)]==0 and levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-0.8)]==0)):
                         m[3][0]+=m[5]*(PCspeed/20)
-                    elif levels.obstacle[top+m[7]][ceil(m[3][0]-0.2)]!=0 or levels.obstacle[top+m[7]][ceil(m[3][0]-0.8)]!=0 or ((levels.back[top+m[7]][ceil(m[3][0]-0.2)]!=0 or levels.back[top+m[7]][ceil(m[3][0]-0.8)]!=0) and (levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-0.2)]==0 and levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-0.8)]==0)):
+                    elif levels.obstacle[top+m[6]][ceil(m[3][0]-0.2)]!=0 or levels.obstacle[top+m[6]][ceil(m[3][0]-0.8)]!=0 or ((levels.back[top+m[6]][ceil(m[3][0]-0.2)]!=0 or levels.back[top+m[6]][ceil(m[3][0]-0.8)]!=0) and (levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-0.2)]==0 and levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-0.8)]==0)):
                         m[3][0]+=m[5]*(PCspeed/20)
                     else:
                         m[4]=180
-                elif not(levels.obstacle[ceil(m[3][1]-2-m[7])][ceil(m[3][0]-0.9)]!=0 or levels.obstacle[ceil(m[3][1]-3-m[7])][ceil(m[3][0]-0.9)]!=0 or (ground==False and levels.obstacle[ceil(m[3][1]-1-m[7])][ceil(m[3][0]-0.9)]!=0)):
-                    m[6]=-0.06*m[7]
+                elif not(levels.obstacle[ceil(m[3][1]-2-m[6])][ceil(m[3][0]-0.9)]!=0 or levels.obstacle[ceil(m[3][1]-3-m[6])][ceil(m[3][0]-0.9)]!=0 or (ground==False and levels.obstacle[ceil(m[3][1]-1-m[6])][ceil(m[3][0]-0.9)]!=0)):
+                    m[7]=True
+                    m[8]=9
                     m[3][0]+=m[5]*(PCspeed/20)
                 else:
                     m[4]=180
@@ -534,23 +535,28 @@ class Monster:
                     top=ceil(m[3][1]-1)
                     if levels.obstacle[top][ceil(m[3][0]-2.2)]!=0 or levels.obstacle[top][ceil(m[3][0]-2.8)]!=0 or ((levels.back[top][ceil(m[3][0]-2.2)]!=0 or levels.back[top][ceil(m[3][0]-2.8)]!=0) and (levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-2.2)]==0 and levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-2.8)]==0)):
                         m[3][0]-=m[5]*(PCspeed/20)
-                    elif levels.obstacle[top+m[7]][ceil(m[3][0]-2.2)]!=0 or levels.obstacle[top+m[7]][ceil(m[3][0]-2.8)]!=0 or ((levels.back[top+m[7]][ceil(m[3][0]-2.2)]!=0 or levels.back[top+m[7]][ceil(m[3][0]-2.8)]!=0) and (levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-2.2)]==0 and levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-2.8)]==0)):
+                    elif levels.obstacle[top+m[6]][ceil(m[3][0]-2.2)]!=0 or levels.obstacle[top+m[6]][ceil(m[3][0]-2.8)]!=0 or ((levels.back[top+m[6]][ceil(m[3][0]-2.2)]!=0 or levels.back[top+m[6]][ceil(m[3][0]-2.8)]!=0) and (levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-2.2)]==0 and levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-2.8)]==0)):
                         m[3][0]-=m[5]*(PCspeed/20)
                     else:
                         m[4]=0
-                elif not(levels.obstacle[ceil(m[3][1]-2-m[7])][ceil(m[3][0]-1.9)]!=0 or levels.obstacle[ceil(m[3][1]-3-m[7])][ceil(m[3][0]-1.9)]!=0 or (ground==False and levels.obstacle[ceil(m[3][1]-1-m[7])][ceil(m[3][0]-1.9)]!=0)):
-                    m[6]=-0.06*m[7]
+                elif not(levels.obstacle[ceil(m[3][1]-2-m[6])][ceil(m[3][0]-1.9)]!=0 or levels.obstacle[ceil(m[3][1]-3-m[6])][ceil(m[3][0]-1.9)]!=0 or (ground==False and levels.obstacle[ceil(m[3][1]-1-m[6])][ceil(m[3][0]-1.9)]!=0)):
+                    m[7]=True
+                    m[8]=9
                     m[3][0]-=m[5]*(PCspeed/20)
                 else:
                     m[4]=0
 
-            if m[6]!=0:
-                tempX=m[3][1]+m[6]
-                if m[6]<0:
-                    m[6]=(tempX-m[3][1])/(levels.gravityAcceleration*1.05)
-                elif m[6]<0.14:
-                    m[6]=(tempX-m[3][1])*levels.gravityAcceleration
-                m[3][1]=tempX
+            if m[7]:
+                if m[8]<0:
+                    F = (0.0005 * (m[8]**2))
+                else:
+                    F = -(0.0005 * (m[8]**2))
+                if m[8]<-12:
+                    m[8]+=0.2*PCspeed/1.4
+                m[8]-=0.2*PCspeed/1.4
+                m[3][1]+=F*PCspeed/1.4
+            else:
+                m[8]=-2
 
             temp=snake[0].get_rect()
             temp.top=(m[3][1]+levels.pos[1])*tileSize-temp.height+25
@@ -631,7 +637,6 @@ while game:
     #VARIABLE WITH TIMESTAMP#
     vitesseAnimation=100*PCspeed
     vitessePlayer=2*PCspeed
-    levels.gravityAcceleration=1.008
     #########################
     levels.move(vitessePlayer,player)
     monster.gravity(PCspeed)
