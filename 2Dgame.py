@@ -193,12 +193,17 @@ class Levels:
         pos2=self.pos[1]*tileSize
         ran=range(ceil(self.pos[0]-1),ceil(screenWidth//tileSize-self.pos[0]+1))
         for i in range(ceil(self.pos[1]*-1-1),ceil(screenHeight//tileSize-self.pos[1]+1)):
+            t=pos2+tileSize*i
+            tB=self.back[i]
+            tO=self.obstacle[i]
+            tD=self.decors[i]
+            tU=self.utils[i]
             for i2 in ran:
-                pos=[pos1+tileSize*i2,pos2+tileSize*i]
-                tBack=self.back[i][i2]
-                tObstacle=self.obstacle[i][i2]
-                tDecors=self.decors[i][i2]
-                tUtils=self.utils[i][i2]
+                pos=[pos1+tileSize*i2,t]
+                tBack=tB[i2]
+                tObstacle=tO[i2]
+                tDecors=tD[i2]
+                tUtils=tU[i2]
                 if tBack!=0:
                     screen.blit(tiles[tBack],pos)
                 if tObstacle!=0:
@@ -215,20 +220,13 @@ class Levels:
         player.climb=False
         if self.talk==False:
             if self.pressed.get(pygame.K_RIGHT):
-                bord=False
-                if self.obstacle[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-0.9)]!=0 or self.obstacle[ceil(self.playerPos[1]-3)][ceil(self.playerPos[0]-0.9)]!=0 or (self.ground==False and self.obstacle[ceil(self.playerPos[1]-1)][ceil(self.playerPos[0]-0.9)]!=0):
-                    bord=True
-                if bord==False:
+                if not(self.obstacle[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-0.9)]!=0 or self.obstacle[ceil(self.playerPos[1]-3)][ceil(self.playerPos[0]-0.9)]!=0 or (self.ground==False and self.obstacle[ceil(self.playerPos[1]-1)][ceil(self.playerPos[0]-0.9)]!=0)):
                     self.pos[0]-=velocity/50
                     self.playerPos[0]+=velocity/50
                     player.lastDirection=0
                     player.move=True
             if self.pressed.get(pygame.K_LEFT):
-                bord=False
-                if self.obstacle[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.9)]!=0 or self.obstacle[ceil(self.playerPos[1]-3)][ceil(self.playerPos[0]-1.9)]!=0 or (self.ground==False and self.obstacle[ceil(self.playerPos[1]-1)][ceil(self.playerPos[0]-1.9)]!=0):
-                    bord=True
-
-                if bord==False:
+                if not(self.obstacle[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.9)]!=0 or self.obstacle[ceil(self.playerPos[1]-3)][ceil(self.playerPos[0]-1.9)]!=0 or (self.ground==False and self.obstacle[ceil(self.playerPos[1]-1)][ceil(self.playerPos[0]-1.9)]!=0)):
                     self.pos[0]+=velocity/50
                     self.playerPos[0]-=velocity/50
                     player.lastDirection=180
@@ -526,7 +524,7 @@ class Monster:
                         m[4]=180
                 elif not(levels.obstacle[ceil(m[3][1]-2-m[6])][ceil(m[3][0]-0.9)]!=0 or levels.obstacle[ceil(m[3][1]-3-m[6])][ceil(m[3][0]-0.9)]!=0 or (ground==False and levels.obstacle[ceil(m[3][1]-1-m[6])][ceil(m[3][0]-0.9)]!=0)):
                     m[7]=True
-                    m[8]=9
+                    m[8]=10.5
                     m[3][0]+=m[5]*(PCspeed/20)
                 else:
                     m[4]=180
@@ -541,7 +539,7 @@ class Monster:
                         m[4]=0
                 elif not(levels.obstacle[ceil(m[3][1]-2-m[6])][ceil(m[3][0]-1.9)]!=0 or levels.obstacle[ceil(m[3][1]-3-m[6])][ceil(m[3][0]-1.9)]!=0 or (ground==False and levels.obstacle[ceil(m[3][1]-1-m[6])][ceil(m[3][0]-1.9)]!=0)):
                     m[7]=True
-                    m[8]=9
+                    m[8]=10.5
                     m[3][0]-=m[5]*(PCspeed/20)
                 else:
                     m[4]=0
