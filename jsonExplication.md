@@ -1,4 +1,5 @@
 **MONSTER**
+
 0-type of the monster
 
 1-life of the monster
@@ -18,6 +19,7 @@
 8-chute speed of the monster
 
 **CHARACTER**
+
 0-horizontal position
 
 1-vertical position
@@ -29,10 +31,11 @@
 4-character name
 
 **SIGN**
+
 0-horizontal position
 
 1-vertical position
 
 2-sign text
 
-**text**
+**TEXT**
