@@ -21,4 +21,6 @@
 1-vertical position
 2-sign text
 
-**text**
+**CHEST**
+0-position
+1-content (in developpement)

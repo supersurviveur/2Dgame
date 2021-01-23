@@ -8,7 +8,8 @@ pygame.init()
 
 ######TODO######
 #-WATER kill
-#-change velocity and gravity with timestamp
+#-invincibilty when take damage
+#-death in the tuto
 ######TODO######
 
 ######CPROFILE######
@@ -22,6 +23,7 @@ screenHeight=screen.get_rect().height
 police20 = pygame.font.Font("./assets/police.otf", 20)
 police30 = pygame.font.Font("./assets/police.otf", 30)
 police40 = pygame.font.Font("./assets/police.otf", 40)
+police60 = pygame.font.Font("./assets/police.otf", 60)
 ###############################
 #LARGEUR -> [0] HAUTEUR -> [1]#
 ###############################
@@ -34,7 +36,7 @@ tilesList=[
     "./textures/barrier.png",
     "./textures/barrier_left.png",
     "./textures/barrier_right.png",
-    "./textures/big_chest.png",
+    "./textures/void_chest.png",
     "./textures/big_stone.png",
     "./textures/big_white_flower.png",
     "./textures/big_yellow_flower.png",
@@ -69,7 +71,7 @@ tilesList=[
     "./textures/dirt_top_left.png",
     "./textures/dirt_top_left_right.png",
     "./textures/dirt_top_right.png",
-    "./textures/epic_chest.png",
+    "./textures/open_chest.png",
     "./textures/floor0.png",
     "./textures/floor1.png",
     "./textures/floor100.png",
@@ -177,8 +179,8 @@ class Levels:
         self.back=[i for i in self.map['back']]
         self.decors=[i for i in self.map['decors']]
         self.utils=[i for i in self.map['utils']]
-        self.pos=[-47,4]       #MIDDLE[-1,4]
-        self.playerPos=[58,6]       #MIDDLE[12,7]
+        self.pos=[-84,0]       #MIDDLE[-1,4]
+        self.playerPos=[95,10]       #MIDDLE[12,7]
         self.pressed={}
         self.chute=0
         self.ground=True
@@ -283,12 +285,19 @@ class Levels:
                 self.water()
             if "ladder" in utilsElement or "ladder" in utilsElement2 or "ladder" in tilesList[self.utils[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.2)]] or "ladder" in tilesList[self.utils[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.8)]]:
                 self.ladder=True
-            if "sign" in tilesList[self.utils[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.2)]]:
-                if self.pressed.get(pygame.K_a):
+
+            if self.pressed.get(pygame.K_a):
+                if "sign" in tilesList[self.utils[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.2)]]:
                     sign.read([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.2)])
-            if "sign" in tilesList[self.utils[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.8)]]:
-                if self.pressed.get(pygame.K_a):
+
+                if "sign" in tilesList[self.utils[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.8)]]:
                     sign.read([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.8)])
+
+                if "chest" in tilesList[self.utils[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.2)]]:
+                    chest.openChest([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.2)])
+
+                if "chest" in tilesList[self.utils[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.8)]]:
+                    chest.openChest([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.8)])
             
             character.isAtPos([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.8)])
             monster.isAtPos([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.8)])
@@ -317,6 +326,8 @@ class Player:
         self.climb=False
         self.talk=False
         self.invincible=False
+        self.invincibleTime=time.time()
+        self.invincibleIter=0
         temp=perso[0].get_rect()
         temp.top=levels.playerPos[1]*tileSize
         temp.left=levels.playerPos[0]*tileSize
@@ -347,10 +358,19 @@ class Player:
                 self.iter+=vitesseAnimation
         else:
             self.current=0
+        if self.invincible:
+            invincibilityTimeLeft=self.invincibleTime-time.time()
+            if invincibilityTimeLeft<=0:
+                self.invincibleIter=0
+                self.invincible=False
+            else:
+                self.invincibleIter+=2-invincibilityTimeLeft/1.5
         if self.lastDirection==0:
-            screen.blit(self.img[self.current], ((levels.playerPos[0]-1+levels.pos[0])*tileSize,(levels.playerPos[1]-1+levels.pos[1])*tileSize-25))
+            if ceil(self.invincibleIter)%30<=14:
+                screen.blit(self.img[self.current], ((levels.playerPos[0]-1+levels.pos[0])*tileSize,(levels.playerPos[1]-1+levels.pos[1])*tileSize-25))
         else:
-            screen.blit(pygame.transform.flip(self.img[self.current], True, False), ((levels.playerPos[0]-1+levels.pos[0])*tileSize,(levels.playerPos[1]-1+levels.pos[1])*tileSize-25))
+            if ceil(self.invincibleIter)%30<=14:
+                screen.blit(pygame.transform.flip(self.img[self.current], True, False), ((levels.playerPos[0]-1+levels.pos[0])*tileSize,(levels.playerPos[1]-1+levels.pos[1])*tileSize-25))
         
         lifePercent=self.life/self.maxLife*3
         if lifePercent<1:
@@ -378,6 +398,24 @@ class Sign:
                 rectText.top = (s[1]-2.5+levels.pos[1])*tileSize
                 rectText.left = (s[0]+0.5+levels.pos[0])*tileSize-rectText.width/2
                 screen.blit(text, rectText)
+                break
+
+class Chest:
+    def __init__(self):
+        s=''
+        for i in open("./map/chest{}.json".format(level),"r").readlines():
+            s+=i
+        self.chest=[i for i in json.loads(s)['chest']]
+    
+    def openChest(self,pos):
+        for s in self.chest:
+            if s[0][1]==pos[0] and s[0][0]==pos[1]+1:
+                if "void" in tilesList[levels.utils[pos[0]-1][pos[1]]]:
+                    print("void")
+                elif "open" in tilesList[levels.utils[pos[0]-1][pos[1]]]:
+                    print("open")
+                else:
+                    levels.utils[pos[0]-1][pos[1]]=[i for i,v in enumerate(tilesList) if "/open_chest.png" in v][0]
                 break
 
 class Character:
@@ -572,6 +610,7 @@ class Monster:
                 if self.rect[i].colliderect(player.rect):
                     player.life-=s[2]
                     player.invincible=True
+                    player.invincibleTime=time.time()+3
 
 class Camera:
     def __init__(self):
@@ -601,7 +640,7 @@ class Tuto:
     def __init__(self):
         self.waterText=False
         self.waterTime=0
-        self.attention=police40.render("FAIT ATTENTION !", False, pygame.Color("#FF0000"))
+        self.attention=police30.render("FAIT ATTENTION !", False, pygame.Color("#FF0000"))
     
     def draw(self):
         if self.waterTime+5>time.time():
@@ -613,14 +652,14 @@ class Tuto:
     def water(self):
         self.waterText=True
         self.waterTime=time.time()
-        levels.pos=[-21,1]
-        levels.playerPos=[32.5,10]
+        levels.pos=[levels.pos[0]+1,levels.pos[1]+1]
+        levels.playerPos=[levels.playerPos[0]-1,levels.playerPos[1]-1]
 
 levels=Levels()
 player=Player()
 sign=Sign()
+chest=Chest()
 character=Character()
-sign.read([1,1])
 text=Text()
 tuto=Tuto()
 monster=Monster()
@@ -640,10 +679,10 @@ while game:
     monster.gravity(PCspeed)
     levels.draw()
     text.draw()
-    if level==1:
-        tuto.draw()
     monster.draw(vitesseAnimation)
     player.draw(levels)
+    if level==1:
+        tuto.draw()
     levels.gravity()
     character.draw()
     for event in pygame.event.get():
@@ -660,9 +699,13 @@ while game:
         elif event.type==pygame.KEYUP:
             levels.pressed[event.key]=False
         elif event.type == VIDEORESIZE:
-            tileSize=ceil(event.w/(screenWidth/tileSize))
+            oldTileSize=tileSize
+            tileSize=round(event.w/(screenWidth/tileSize))
+            levels.pos[1]=levels.pos[1]-(levels.pos[1]/(tileSize/oldTileSize))
             tiles=[pygame.transform.scale(pygame.image.load(i).convert_alpha(), (tileSize+1, tileSize)) for i in tilesList]
-    
+            screenWidth=screen.get_rect().width
+            screenHeight=screen.get_rect().height
+                
     if player.talk:
         camera.zoomTalk(screen,0.5,[-screenWidth*0.25,-screenHeight*0.4])
     elif camera.iterZoom!=0:
