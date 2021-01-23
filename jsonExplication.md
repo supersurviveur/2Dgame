@@ -30,11 +30,17 @@
 
 4-character name
 
-**SIGN**\n
-0-horizontal position\n
-1-vertical position\n
-2-sign text\n
+**SIGN**
+
+0-horizontal position
+
+1-vertical position
+
+2-sign text
 
 **CHEST**
+
 0-position
+
 1-content (in developpement)
+
