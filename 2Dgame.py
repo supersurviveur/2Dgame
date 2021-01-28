@@ -16,10 +16,40 @@ pygame.init()
 #python -m cProfile -s tottime 2Dgame.py
 ############
 
+cursorList = (#sized 24x24
+  "          ....          ",
+  "          ....          ",
+  "          ....          ",
+  "          ....          ",
+  "          ....          ",
+  "          ....          ",
+  "          ....          ",
+  "          ....          ",
+  "          ....          ",
+  "          ....          ",
+  "........................",
+  "........................",
+  "........................",
+  "........................",
+  "          ....          ",
+  "          ....          ",
+  "          ....          ",
+  "          ....          ",
+  "          ....          ",
+  "          ....          ",
+  "          ....          ",
+  "          ....          ",
+  "          ....          ",
+  "          ....          ")
+
 pygame.display.set_caption("2D game with pygame - super_surviveur")
 screen = pygame.display.set_mode((1080,720), pygame.RESIZABLE)
 screenWidth=screen.get_rect().width
 screenHeight=screen.get_rect().height
+
+cursor = pygame.cursors.compile(cursorList, black='X', white='.', xor='o')
+pygame.mouse.set_cursor((24,24),(12,12),*cursor)
+
 police20 = pygame.font.Font("./assets/police.otf", 20)
 police30 = pygame.font.Font("./assets/police.otf", 30)
 police40 = pygame.font.Font("./assets/police.otf", 40)
@@ -157,6 +187,19 @@ talkList=[
     ["./textures/characters/talk/wait-1.png", 21, 23],
 ]
 talk=[pygame.transform.scale(pygame.image.load(i[0]).convert_alpha(), (ceil(tileSize/17*i[1]), ceil(tileSize*1.5))) for i in talkList]
+itemList=[
+    "./textures/item/stone_sword.png",
+]
+itemImg=[pygame.transform.scale(pygame.image.load(i).convert_alpha(), (ceil(screenWidth/2*0.19047619047619047619047619047619), ceil(screenWidth/2*0.19047619047619047619047619047619))) for i in itemList]
+guiList=[
+    "./textures/inventory/inventory.png",
+    "./textures/inventory/slot.png",
+]
+gui=[]
+# INVENTORY
+gui.append(pygame.transform.scale(pygame.image.load(guiList[0]).convert_alpha(), (ceil(screenWidth/2), ceil(screenWidth/2))))
+# SLOT
+gui.append(pygame.transform.scale(pygame.image.load(guiList[1]).convert_alpha(), (ceil(screenWidth/2), ceil(screenHeight/2))))
 snakeList=[
     ["./textures/characters/snake/snake0.png", 21, 23],
     ["./textures/characters/snake/snake1.png", 21, 23],
@@ -612,6 +655,35 @@ class Monster:
                     player.invincible=True
                     player.invincibleTime=time.time()+3
 
+class Item:
+    def __init__(self):
+        s=''
+        for i in codecs.open("./map/item.json", "r", "utf-8").readlines():
+            s+=i
+        self.item=[i for i in json.loads(s)['item']]
+
+class Inventory:
+    def __init__(self):
+        s=''
+        for i in codecs.open("./map/inventory.json", "r", "utf-8").readlines():
+            s+=i
+        self.inventory=[i for i in json.loads(s)['inventory']]
+        self.open=False
+
+    def draw(self):
+        if self.open:
+            top=screen.get_height()/2-gui[0].get_height()/2
+            left=screen.get_width()/2-gui[0].get_width()/2
+            screen.blit(gui[0],(left, top))
+            top-=4
+            left+=2
+            pixel=ceil(gui[0].get_width()/84)+0.24
+            for i,e in enumerate(self.inventory):
+                if e!=0:
+                    if i!=8:
+                        screen.blit(itemImg[item.item[e-1][2]],(left+pixel*6+(pixel*16*(i%4)), top+pixel*13+((pixel+0.02)*16*(i//4))))
+
+
 class Camera:
     def __init__(self):
         self.animate=False
@@ -662,7 +734,9 @@ chest=Chest()
 character=Character()
 text=Text()
 tuto=Tuto()
+item=Item()
 monster=Monster()
+inventory=Inventory()
 camera=Camera()
 game=True
 iteration=0
@@ -685,6 +759,7 @@ while game:
         tuto.draw()
     levels.gravity()
     character.draw()
+    inventory.draw()
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
             game=False
@@ -692,6 +767,8 @@ while game:
             #DEPLACEMENT DE LA CAMERA#
             if event.key==pygame.K_p:
                 print("player:"+str(levels.playerPos)+"\nlevel:"+str(levels.pos))
+            elif event.key==pygame.K_e:
+                inventory.open=not(inventory.open)
             elif event.key==pygame.K_a and levels.talk:
                 character.change()
             else:
