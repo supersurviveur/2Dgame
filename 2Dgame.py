@@ -190,16 +190,19 @@ talk=[pygame.transform.scale(pygame.image.load(i[0]).convert_alpha(), (ceil(tile
 itemList=[
     "./textures/item/stone_sword.png",
 ]
-itemImg=[pygame.transform.scale(pygame.image.load(i).convert_alpha(), (ceil(screenWidth/2*0.19047619047619047619047619047619), ceil(screenWidth/2*0.19047619047619047619047619047619))) for i in itemList]
+itemImg=[pygame.transform.scale(pygame.image.load(i).convert_alpha(), (80, 80)) for i in itemList]
 guiList=[
     "./textures/inventory/inventory.png",
     "./textures/inventory/slot.png",
+    "./textures/inventory/chest.png",
 ]
 gui=[]
 # INVENTORY
-gui.append(pygame.transform.scale(pygame.image.load(guiList[0]).convert_alpha(), (ceil(screenWidth/2), ceil(screenWidth/2))))
+gui.append(pygame.transform.scale(pygame.image.load(guiList[0]).convert_alpha(), (420, 420)))
 # SLOT
-gui.append(pygame.transform.scale(pygame.image.load(guiList[1]).convert_alpha(), (ceil(screenWidth/2), ceil(screenHeight/2))))
+gui.append(pygame.transform.scale(pygame.image.load(guiList[1]).convert_alpha(), (110, 110)))
+# CHEST
+gui.append(pygame.transform.scale(pygame.image.load(guiList[2]).convert_alpha(), (550, 550)))
 snakeList=[
     ["./textures/characters/snake/snake0.png", 21, 23],
     ["./textures/characters/snake/snake1.png", 21, 23],
@@ -338,9 +341,11 @@ class Levels:
 
                 if "chest" in tilesList[self.utils[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.2)]]:
                     chest.openChest([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.2)])
+                    self.pressed[pygame.K_a]=False
 
                 if "chest" in tilesList[self.utils[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.8)]]:
                     chest.openChest([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.8)])
+                    self.pressed[pygame.K_a]=False
             
             character.isAtPos([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.8)])
             monster.isAtPos([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.8)])
@@ -454,11 +459,17 @@ class Chest:
         for s in self.chest:
             if s[0][1]==pos[0] and s[0][0]==pos[1]+1:
                 if "void" in tilesList[levels.utils[pos[0]-1][pos[1]]]:
-                    print("void")
+                    levels.utils[pos[0]-1][pos[1]]=[i for i,v in enumerate(tilesList) if "/open_chest.png" in v][0]
+                    inventory.chest=True
+                    inventory.chestInventory=s[1]
                 elif "open" in tilesList[levels.utils[pos[0]-1][pos[1]]]:
-                    print("open")
+                    levels.utils[pos[0]-1][pos[1]]=[i for i,v in enumerate(tilesList) if "/open_chest.png" in v][0]
+                    inventory.chest=True
+                    inventory.chestInventory=s[1]
                 else:
                     levels.utils[pos[0]-1][pos[1]]=[i for i,v in enumerate(tilesList) if "/open_chest.png" in v][0]
+                    inventory.chest=True
+                    inventory.chestInventory=s[1]
                 break
 
 class Character:
@@ -473,7 +484,7 @@ class Character:
         self.iter=0
         self.current=0
     
-    def draw(self):
+    def draw(self, vitesseAnimation):
         if self.iter>3000:
             self.current=(self.current+1)%2
             self.iter=0
@@ -669,19 +680,38 @@ class Inventory:
             s+=i
         self.inventory=[i for i in json.loads(s)['inventory']]
         self.open=False
+        self.chest=False
+        self.chestInventory=[]
 
     def draw(self):
-        if self.open:
-            top=screen.get_height()/2-gui[0].get_height()/2
-            left=screen.get_width()/2-gui[0].get_width()/2
-            screen.blit(gui[0],(left, top))
-            top-=4
-            left+=2
-            pixel=ceil(gui[0].get_width()/84)+0.24
-            for i,e in enumerate(self.inventory):
-                if e!=0:
-                    if i!=8:
-                        screen.blit(itemImg[item.item[e-1][2]],(left+pixel*6+(pixel*16*(i%4)), top+pixel*13+((pixel+0.02)*16*(i//4))))
+        if not(player.talk):
+            pixel=5
+            screen.blit(gui[1], (screenWidth/2-gui[1].get_width()/2,(screenHeight/8)*7-gui[1].get_height()/2))
+            screen.blit(itemImg[self.inventory[8]-1], (screenWidth/2-gui[1].get_width()/2+pixel*3,(screenHeight/8)*7-gui[1].get_height()/2+pixel*3))
+            if self.open:
+                top=screen.get_height()/2-gui[0].get_height()/2
+                left=screen.get_width()/2-gui[0].get_width()/2
+                screen.blit(gui[0],(left, top))
+                for i,e in enumerate(self.inventory):
+                    if e!=0:
+                        if i!=8:
+                            screen.blit(itemImg[item.item[e-1][2]],(left+pixel*7+(pixel*18*(i%4)), top+pixel*14+(pixel*18*(i//4))))
+                        else:
+                            screen.blit(itemImg[item.item[e-1][2]],(left+pixel*7, top+pixel*54))
+            elif self.chest:
+                top=screen.get_height()/2-gui[2].get_height()/2
+                left=screen.get_width()/2-gui[2].get_width()/2
+                screen.blit(gui[2],(left, top))
+                for i,e in enumerate(self.chestInventory):
+                    if e!=0:
+                        screen.blit(itemImg[item.item[e-1][2]],(left+pixel*20+(pixel*18*(i%4)), top+pixel*7+(pixel*18*(i//4))))
+                for i,e in enumerate(self.inventory):
+                    if e!=0:
+                        if i!=8:
+                            screen.blit(itemImg[item.item[e-1][2]],(left+pixel*20+(pixel*18*(i%4)), top+pixel*47+(pixel*18*(i//4))))
+                        else:
+                            screen.blit(itemImg[item.item[e-1][2]],(left+pixel*20, top+pixel*87))
+    
 
 
 class Camera:
@@ -727,6 +757,32 @@ class Tuto:
         levels.pos=[levels.pos[0]+1,levels.pos[1]+1]
         levels.playerPos=[levels.playerPos[0]-1,levels.playerPos[1]-1]
 
+
+def pause(key):
+    global timeStamp,game
+    pause=True
+    while pause:
+        levels.draw()
+        text.draw()
+        monster.draw(0)
+        player.draw(levels)
+        character.draw(0)
+        inventory.draw()
+        for event in pygame.event.get():
+            if event.type==pygame.QUIT:
+                game=False
+                pause=False
+                break
+            elif event.type==pygame.KEYDOWN:
+                for k in key:
+                    if k==event.key:
+                        pause=False
+                        break
+            elif event.type==pygame.KEYUP:
+                levels.pressed[event.key]=False
+        pygame.display.flip()
+    timeStamp=time.time()-0.001
+
 levels=Levels()
 player=Player()
 sign=Sign()
@@ -743,6 +799,13 @@ iteration=0
 vitesseAnimation=20
 timeStamp=time.time()-1
 while game:
+    if inventory.chest:
+        pause([pygame.K_e, pygame.K_a, pygame.K_ESCAPE])
+        inventory.chest=False
+        inventory.chestInventory=[]
+    if inventory.open:
+        pause([pygame.K_e, pygame.K_a, pygame.K_ESCAPE])
+        inventory.open=False
     PCspeed=(time.time()-timeStamp)*100
     timeStamp=time.time()
     #VARIABLE WITH TIMESTAMP#
@@ -758,7 +821,7 @@ while game:
     if level==1:
         tuto.draw()
     levels.gravity()
-    character.draw()
+    character.draw(vitesseAnimation)
     inventory.draw()
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
@@ -767,7 +830,7 @@ while game:
             #DEPLACEMENT DE LA CAMERA#
             if event.key==pygame.K_p:
                 print("player:"+str(levels.playerPos)+"\nlevel:"+str(levels.pos))
-            elif event.key==pygame.K_e:
+            elif event.key==pygame.K_e and not(inventory.chest):
                 inventory.open=not(inventory.open)
             elif event.key==pygame.K_a and levels.talk:
                 character.change()
@@ -775,7 +838,10 @@ while game:
                 levels.pressed[event.key]=True
         elif event.type==pygame.KEYUP:
             levels.pressed[event.key]=False
-        elif event.type == VIDEORESIZE:
+        elif event.type==pygame.MOUSEBUTTONDOWN:
+            pos=event.pos
+            print(pos)
+        elif event.type==pygame.VIDEORESIZE:
             oldTileSize=tileSize
             tileSize=round(event.w/(screenWidth/tileSize))
             levels.pos[1]=levels.pos[1]-(levels.pos[1]/(tileSize/oldTileSize))
