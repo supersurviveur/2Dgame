@@ -42,5 +42,22 @@
 
 0-position
 
-1-content (in developpement)
+1-content
 
+**INVENTORY**
+
+0.7-inventory item
+
+8-hand item
+
+**ITEM**
+
+0-nom
+
+1-dégats
+
+2-picture number
+
+3-categorie
+
+4-item distance if it's a weapon

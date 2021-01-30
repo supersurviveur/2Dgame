@@ -189,6 +189,7 @@ talkList=[
 talk=[pygame.transform.scale(pygame.image.load(i[0]).convert_alpha(), (ceil(tileSize/17*i[1]), ceil(tileSize*1.5))) for i in talkList]
 itemList=[
     "./textures/item/stone_sword.png",
+    "./textures/item/bow.png",
 ]
 itemImg=[pygame.transform.scale(pygame.image.load(i).convert_alpha(), (80, 80)) for i in itemList]
 guiList=[
@@ -197,6 +198,7 @@ guiList=[
     "./textures/inventory/chest.png",
 ]
 gui=[]
+pixel=5
 # INVENTORY
 gui.append(pygame.transform.scale(pygame.image.load(guiList[0]).convert_alpha(), (420, 420)))
 # SLOT
@@ -682,10 +684,10 @@ class Inventory:
         self.open=False
         self.chest=False
         self.chestInventory=[]
+        self.select=None
 
     def draw(self):
         if not(player.talk):
-            pixel=5
             screen.blit(gui[1], (screenWidth/2-gui[1].get_width()/2,(screenHeight/8)*7-gui[1].get_height()/2))
             screen.blit(itemImg[self.inventory[8]-1], (screenWidth/2-gui[1].get_width()/2+pixel*3,(screenHeight/8)*7-gui[1].get_height()/2+pixel*3))
             if self.open:
@@ -694,10 +696,24 @@ class Inventory:
                 screen.blit(gui[0],(left, top))
                 for i,e in enumerate(self.inventory):
                     if e!=0:
-                        if i!=8:
-                            screen.blit(itemImg[item.item[e-1][2]],(left+pixel*7+(pixel*18*(i%4)), top+pixel*14+(pixel*18*(i//4))))
-                        else:
-                            screen.blit(itemImg[item.item[e-1][2]],(left+pixel*7, top+pixel*54))
+                        if not(self.select==i):
+                            if i!=8:
+                                screen.blit(itemImg[item.item[e-1][2]],(left+pixel*7+(pixel*18*(i%4)), top+pixel*14+(pixel*18*(i//4))))
+                            else:
+                                screen.blit(itemImg[item.item[e-1][2]],(left+pixel*7, top+pixel*54))
+                
+                pos=pygame.mouse.get_pos()
+                if pos[0]>left+pixel*7 and pos[0]<left+pixel*77:
+                    if pos[1]>top+pixel*14 and pos[1]<top+pixel*48:
+                        case=[ceil((pos[0]-(left+pixel*7))/pixel-1)//17 , ceil((pos[1]-(top+pixel*14))/pixel-1)//17]
+                        s=pygame.Surface((pixel*16,pixel*16), pygame.SRCALPHA)
+                        s.fill((200,200,200,150))
+                        screen.blit(s,[left+pixel*7+case[0]*pixel*18,top+pixel*14+case[1]*pixel*18])
+                        
+                if self.select!=None:
+                    pos=pygame.mouse.get_pos()
+                    screen.blit(itemImg[item.item[self.inventory[self.select]-1][2]],(pos[0]-pixel*8,pos[1]-pixel*8))
+
             elif self.chest:
                 top=screen.get_height()/2-gui[2].get_height()/2
                 left=screen.get_width()/2-gui[2].get_width()/2
@@ -758,7 +774,7 @@ class Tuto:
         levels.playerPos=[levels.playerPos[0]-1,levels.playerPos[1]-1]
 
 
-def pause(key):
+def inventoryEvenements(key):
     global timeStamp,game
     pause=True
     while pause:
@@ -780,6 +796,25 @@ def pause(key):
                         break
             elif event.type==pygame.KEYUP:
                 levels.pressed[event.key]=False
+            elif event.type==pygame.MOUSEBUTTONDOWN:
+                pos=event.pos
+                if inventory.open:
+                    top=screen.get_height()/2-gui[0].get_height()/2
+                    left=screen.get_width()/2-gui[0].get_width()/2
+                    if pos[0]>left+pixel*7 and pos[0]<left+pixel*77:
+                        if pos[1]>top+pixel*14 and pos[1]<top+pixel*48:
+                            case=[ceil((pos[0]-(left+pixel*7))/pixel-1)//17 , ceil((pos[1]-(top+pixel*14))/pixel-1)//17]
+                            select=case[0]+case[1]*4
+                            if inventory.select==None:
+                                if inventory.inventory[select]!=0:
+                                    inventory.select=select
+                            else:
+                                if inventory.inventory[select]==0 or inventory.select==select:
+                                    inventory.inventory[inventory.select], inventory.inventory[select]=inventory.inventory[select],inventory.inventory[inventory.select]
+                                    inventory.select=None
+                                else:
+                                    inventory.inventory[inventory.select], inventory.inventory[select]=inventory.inventory[select],inventory.inventory[inventory.select]
+                print(pos)
         pygame.display.flip()
     timeStamp=time.time()-0.001
 
@@ -800,11 +835,11 @@ vitesseAnimation=20
 timeStamp=time.time()-1
 while game:
     if inventory.chest:
-        pause([pygame.K_e, pygame.K_a, pygame.K_ESCAPE])
+        inventoryEvenements([pygame.K_e, pygame.K_a, pygame.K_ESCAPE])
         inventory.chest=False
         inventory.chestInventory=[]
     if inventory.open:
-        pause([pygame.K_e, pygame.K_a, pygame.K_ESCAPE])
+        inventoryEvenements([pygame.K_e, pygame.K_a, pygame.K_ESCAPE])
         inventory.open=False
     PCspeed=(time.time()-timeStamp)*100
     timeStamp=time.time()
@@ -838,9 +873,6 @@ while game:
                 levels.pressed[event.key]=True
         elif event.type==pygame.KEYUP:
             levels.pressed[event.key]=False
-        elif event.type==pygame.MOUSEBUTTONDOWN:
-            pos=event.pos
-            print(pos)
         elif event.type==pygame.VIDEORESIZE:
             oldTileSize=tileSize
             tileSize=round(event.w/(screenWidth/tileSize))
