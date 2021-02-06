@@ -227,8 +227,8 @@ class Levels:
         self.back=[i for i in self.map['back']]
         self.decors=[i for i in self.map['decors']]
         self.utils=[i for i in self.map['utils']]
-        self.pos=[-84,0]       #MIDDLE[-1,4]
-        self.playerPos=[95,10]       #MIDDLE[12,7]
+        self.pos=[-82,0]       #MIDDLE[-1,4]
+        self.playerPos=[93,10]       #MIDDLE[12,7]
         self.pressed={}
         self.chute=0
         self.ground=True
@@ -460,19 +460,20 @@ class Chest:
     def openChest(self,pos):
         for s in self.chest:
             if s[0][1]==pos[0] and s[0][0]==pos[1]+1:
-                if "void" in tilesList[levels.utils[pos[0]-1][pos[1]]]:
+                inventory.chest=True
+                inventory.chestInventory=s[1]
+                if not("void" in tilesList[levels.utils[pos[0]-1][pos[1]]]):
                     levels.utils[pos[0]-1][pos[1]]=[i for i,v in enumerate(tilesList) if "/open_chest.png" in v][0]
-                    inventory.chest=True
-                    inventory.chestInventory=s[1]
-                elif "open" in tilesList[levels.utils[pos[0]-1][pos[1]]]:
-                    levels.utils[pos[0]-1][pos[1]]=[i for i,v in enumerate(tilesList) if "/open_chest.png" in v][0]
-                    inventory.chest=True
-                    inventory.chestInventory=s[1]
-                else:
-                    levels.utils[pos[0]-1][pos[1]]=[i for i,v in enumerate(tilesList) if "/open_chest.png" in v][0]
-                    inventory.chest=True
-                    inventory.chestInventory=s[1]
                 break
+    
+    def changeChest(self,pos):
+        for s in self.chest:
+            if s[0][1]==pos[0] and s[0][0]==pos[1]+1:
+                use=[True for i in inventory.chestInventory if i!=0]
+                if True in use:
+                    levels.utils[pos[0]-1][pos[1]]=[i for i,v in enumerate(tilesList) if "/open_chest.png" in v][0]
+                else:
+                    levels.utils[pos[0]-1][pos[1]]=[i for i,v in enumerate(tilesList) if "/void_chest.png" in v][0]
 
 class Character:
     def __init__(self):
@@ -663,7 +664,7 @@ class Monster:
         if player.invincible==False:
             current=ceil(iteration/vitesseAnimation)%2
             for i,s in enumerate(self.monster):
-                if self.rect[i].colliderect(player.rect):
+                if pygame.mask.from_surface(self.img[self.current]).overlap(pygame.mask.from_surface(player.img[player.current]), (self.rect[i].left-player.rect.left, self.rect[i].top-player.rect.top)) != None:
                     player.life-=s[2]
                     player.invincible=True
                     player.invincibleTime=time.time()+3
@@ -689,7 +690,8 @@ class Inventory:
     def draw(self):
         if not(player.talk):
             screen.blit(gui[1], (screenWidth/2-gui[1].get_width()/2,(screenHeight/8)*7-gui[1].get_height()/2))
-            screen.blit(itemImg[self.inventory[8]-1], (screenWidth/2-gui[1].get_width()/2+pixel*3,(screenHeight/8)*7-gui[1].get_height()/2+pixel*3))
+            if self.inventory[8]-1>=0:
+                screen.blit(itemImg[self.inventory[8]-1], (screenWidth/2-gui[1].get_width()/2+pixel*3,(screenHeight/8)*7-gui[1].get_height()/2+pixel*3))
             if self.open:
                 top=screen.get_height()/2-gui[0].get_height()/2
                 left=screen.get_width()/2-gui[0].get_width()/2
@@ -705,13 +707,16 @@ class Inventory:
                 pos=pygame.mouse.get_pos()
                 if pos[0]>left+pixel*7 and pos[0]<left+pixel*77:
                     if pos[1]>top+pixel*14 and pos[1]<top+pixel*48:
-                        case=[ceil((pos[0]-(left+pixel*7))/pixel-1)//17 , ceil((pos[1]-(top+pixel*14))/pixel-1)//17]
+                        case=[ceil((pos[0]-(left+pixel*6))/pixel-1)//18 , ceil((pos[1]-(top+pixel*14))/pixel-1)//18]
                         s=pygame.Surface((pixel*16,pixel*16), pygame.SRCALPHA)
                         s.fill((200,200,200,150))
                         screen.blit(s,[left+pixel*7+case[0]*pixel*18,top+pixel*14+case[1]*pixel*18])
+                    elif pos[1]>top+pixel*54 and pos[1]<top+pixel*70 and pos[0]<left+pixel*23:
+                        s=pygame.Surface((pixel*16,pixel*16), pygame.SRCALPHA)
+                        s.fill((200,200,200,150))
+                        screen.blit(s,[left+pixel*7,top+pixel*54])
                         
                 if self.select!=None:
-                    pos=pygame.mouse.get_pos()
                     screen.blit(itemImg[item.item[self.inventory[self.select]-1][2]],(pos[0]-pixel*8,pos[1]-pixel*8))
 
             elif self.chest:
@@ -720,13 +725,38 @@ class Inventory:
                 screen.blit(gui[2],(left, top))
                 for i,e in enumerate(self.chestInventory):
                     if e!=0:
-                        screen.blit(itemImg[item.item[e-1][2]],(left+pixel*20+(pixel*18*(i%4)), top+pixel*7+(pixel*18*(i//4))))
+                        if not(self.select==i):
+                            screen.blit(itemImg[item.item[e-1][2]],(left+pixel*20+(pixel*18*(i%4)), top+pixel*7+(pixel*18*(i//4))))
                 for i,e in enumerate(self.inventory):
                     if e!=0:
-                        if i!=8:
-                            screen.blit(itemImg[item.item[e-1][2]],(left+pixel*20+(pixel*18*(i%4)), top+pixel*47+(pixel*18*(i//4))))
-                        else:
-                            screen.blit(itemImg[item.item[e-1][2]],(left+pixel*20, top+pixel*87))
+                        if not(self.select==i+8):
+                            if i!=8:
+                                screen.blit(itemImg[item.item[e-1][2]],(left+pixel*20+(pixel*18*(i%4)), top+pixel*47+(pixel*18*(i//4))))
+                            else:
+                                screen.blit(itemImg[item.item[e-1][2]],(left+pixel*20, top+pixel*87))
+                
+                pos=pygame.mouse.get_pos()
+                if pos[0]>left+pixel*20 and pos[0]<left+pixel*90:
+                    if pos[1]>top+pixel*7 and pos[1]<top+pixel*41:
+                        case=[ceil((pos[0]-(left+pixel*19))/pixel-1)//18 , ceil((pos[1]-(top+pixel*7))/pixel-1)//18]
+                        s=pygame.Surface((pixel*16,pixel*16), pygame.SRCALPHA)
+                        s.fill((200,200,200,150))
+                        screen.blit(s,[left+pixel*20+case[0]*pixel*18,top+pixel*7+case[1]*pixel*18])
+                    elif pos[1]>top+pixel*47 and pos[1]<top+pixel*81:
+                        case=[ceil((pos[0]-(left+pixel*19))/pixel-1)//18 , ceil((pos[1]-(top+pixel*47))/pixel-1)//18]
+                        s=pygame.Surface((pixel*16,pixel*16), pygame.SRCALPHA)
+                        s.fill((200,200,200,150))
+                        screen.blit(s,[left+pixel*20+case[0]*pixel*18,top+pixel*47+case[1]*pixel*18])
+                    elif pos[1]>top+pixel*87 and pos[1]<top+pixel*103 and pos[0]<left+pixel*36:
+                        s=pygame.Surface((pixel*16,pixel*16), pygame.SRCALPHA)
+                        s.fill((200,200,200,150))
+                        screen.blit(s,[left+pixel*20,top+pixel*87])
+
+                if self.select!=None:
+                    if self.select<8:
+                        screen.blit(itemImg[item.item[self.chestInventory[self.select]-1][2]],(pos[0]-pixel*8,pos[1]-pixel*8))
+                    else:
+                        screen.blit(itemImg[item.item[self.inventory[self.select-8]-1][2]],(pos[0]-pixel*8,pos[1]-pixel*8))
     
 
 
@@ -803,7 +833,7 @@ def inventoryEvenements(key):
                     left=screen.get_width()/2-gui[0].get_width()/2
                     if pos[0]>left+pixel*7 and pos[0]<left+pixel*77:
                         if pos[1]>top+pixel*14 and pos[1]<top+pixel*48:
-                            case=[ceil((pos[0]-(left+pixel*7))/pixel-1)//17 , ceil((pos[1]-(top+pixel*14))/pixel-1)//17]
+                            case=[ceil((pos[0]-(left+pixel*7))/pixel-1)//18 , ceil((pos[1]-(top+pixel*14))/pixel-1)//18]
                             select=case[0]+case[1]*4
                             if inventory.select==None:
                                 if inventory.inventory[select]!=0:
@@ -814,6 +844,85 @@ def inventoryEvenements(key):
                                     inventory.select=None
                                 else:
                                     inventory.inventory[inventory.select], inventory.inventory[select]=inventory.inventory[select],inventory.inventory[inventory.select]
+                        elif pos[1]>top+pixel*54 and pos[1]<top+pixel*70 and pos[0]<left+pixel*23:
+                            case=[0,2]
+                            select=8
+                            if inventory.select==None:
+                                if inventory.inventory[select]!=0:
+                                    inventory.select=select
+                            else:
+                                if inventory.inventory[select]==0 or inventory.select==select:
+                                    inventory.inventory[inventory.select], inventory.inventory[select]=inventory.inventory[select],inventory.inventory[inventory.select]
+                                    inventory.select=None
+                                else:
+                                    inventory.inventory[inventory.select], inventory.inventory[select]=inventory.inventory[select],inventory.inventory[inventory.select]
+                elif inventory.chest:
+                    top=screen.get_height()/2-gui[2].get_height()/2
+                    left=screen.get_width()/2-gui[2].get_width()/2
+                    if pos[0]>left+pixel*20 and pos[0]<left+pixel*90:
+                        if pos[1]>top+pixel*7 and pos[1]<top+pixel*41:
+                            case=[ceil((pos[0]-(left+pixel*19))/pixel-1)//18 , ceil((pos[1]-(top+pixel*7))/pixel-1)//18]
+                            select=case[0]+case[1]*4
+                            if inventory.select==None:
+                                if inventory.chestInventory[select]!=0:
+                                    inventory.select=select
+                            else:
+                                if inventory.select<8:
+                                    if inventory.chestInventory[select]==0 or inventory.select==select:
+                                        inventory.chestInventory[inventory.select], inventory.chestInventory[select]=inventory.chestInventory[select],inventory.chestInventory[inventory.select]
+                                        inventory.select=None
+                                    else:
+                                        inventory.chestInventory[inventory.select], inventory.chestInventory[select]=inventory.chestInventory[select],inventory.chestInventory[inventory.select]
+                                else:
+                                    if inventory.chestInventory[select]==0:
+                                        inventory.inventory[inventory.select-8], inventory.chestInventory[select]=inventory.chestInventory[select],inventory.inventory[inventory.select-8]
+                                        inventory.select=None
+                                    else:
+                                        inventory.inventory[inventory.select-8], inventory.chestInventory[select]=inventory.chestInventory[select],inventory.inventory[inventory.select-8]
+                                
+
+                        elif pos[1]>top+pixel*47 and pos[1]<top+pixel*81:
+                            case=[ceil((pos[0]-(left+pixel*19))/pixel-1)//18 , ceil((pos[1]-(top+pixel*47))/pixel-1)//18]
+                            select=case[0]+case[1]*4+8
+                            if inventory.select==None:
+                                if inventory.inventory[select-8]!=0:
+                                    inventory.select=select
+                            else:
+                                if inventory.select<8:
+                                    if inventory.inventory[select-8]==0:
+                                        inventory.chestInventory[inventory.select], inventory.inventory[select-8]=inventory.inventory[select-8],inventory.chestInventory[inventory.select]
+                                        inventory.select=None
+                                    else:
+                                        inventory.chestInventory[inventory.select], inventory.inventory[select-8]=inventory.inventory[select-8],inventory.chestInventory[inventory.select]
+                                else:
+                                    if inventory.inventory[select-8]==0 or inventory.select==select:
+                                        inventory.inventory[inventory.select-8], inventory.inventory[select-8]=inventory.inventory[select-8],inventory.inventory[inventory.select-8]
+                                        inventory.select=None
+                                    else:
+                                        inventory.inventory[inventory.select-8], inventory.inventory[select-8]=inventory.inventory[select-8],inventory.inventory[inventory.select-8]
+                        
+                        elif pos[1]>top+pixel*87 and pos[1]<top+pixel*103 and pos[0]<left+pixel*36:
+                            select=16
+                            if inventory.select==None:
+                                if inventory.inventory[select-8]!=0:
+                                    inventory.select=select
+                            else:
+                                if inventory.select<8:
+                                    if inventory.inventory[select-8]==0:
+                                        inventory.chestInventory[inventory.select], inventory.inventory[select-8]=inventory.inventory[select-8],inventory.chestInventory[inventory.select]
+                                        inventory.select=None
+                                    else:
+                                        inventory.chestInventory[inventory.select], inventory.inventory[select-8]=inventory.inventory[select-8],inventory.chestInventory[inventory.select]
+                                else:
+                                    if inventory.inventory[select-8]==0 or inventory.select==select:
+                                        inventory.inventory[inventory.select-8], inventory.inventory[select-8]=inventory.inventory[select-8],inventory.inventory[inventory.select-8]
+                                        inventory.select=None
+                                    else:
+                                        inventory.inventory[inventory.select-8], inventory.inventory[select-8]=inventory.inventory[select-8],inventory.inventory[inventory.select-8]
+                    
+                    chest.changeChest([ceil(levels.playerPos[1]-1),ceil(levels.playerPos[0]-1.8)])
+                    chest.changeChest([ceil(levels.playerPos[1]-1),ceil(levels.playerPos[0]-1.2)])
+
                 print(pos)
         pygame.display.flip()
     timeStamp=time.time()-0.001
