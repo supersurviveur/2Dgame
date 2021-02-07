@@ -2,7 +2,7 @@
 
 0-type of the monster
 
-1-life of the monster
+1-max life of the monster
 
 2-damage of the monster
 
@@ -17,6 +17,10 @@
 7-is the monster is in the air
 
 8-chute speed of the monster
+
+9-current life of the monster
+
+10-1 if the monster is death else 0
 
 **CHARACTER**
 
@@ -54,7 +58,7 @@
 
 0-nom
 
-1-dégats
+1-damage
 
 2-picture number
 

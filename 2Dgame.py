@@ -192,6 +192,11 @@ itemList=[
     "./textures/item/bow.png",
 ]
 itemImg=[pygame.transform.scale(pygame.image.load(i).convert_alpha(), (80, 80)) for i in itemList]
+itemHandList=[
+    "./textures/item/hand/stone_sword.png",
+    "./textures/item/hand/bow.png",
+]
+itemHandImg=[pygame.transform.scale(pygame.image.load(i).convert_alpha(), (64, 64)) for i in itemHandList]
 guiList=[
     "./textures/inventory/inventory.png",
     "./textures/inventory/slot.png",
@@ -219,7 +224,7 @@ class Levels:
     def __init__(self):
         self.backgroundImage=pygame.transform.scale(pygame.image.load("./textures/background.png"), (screen.get_rect().width, screen.get_rect().height))
         s=''
-        for i in open("./map/level{}.json".format(level),"r").readlines():
+        for i in codecs.open("./map/level{}.json".format(level),"r").readlines():
             s+=i
         self.map=json.loads(s)
 
@@ -227,8 +232,8 @@ class Levels:
         self.back=[i for i in self.map['back']]
         self.decors=[i for i in self.map['decors']]
         self.utils=[i for i in self.map['utils']]
-        self.pos=[-82,0]       #MIDDLE[-1,4]
-        self.playerPos=[93,10]       #MIDDLE[12,7]
+        self.pos=[-80,0]       #MIDDLE[-1,4]
+        self.playerPos=[-self.pos[0]+screenWidth/tileSize/2+0.4,10]       #MIDDLE[12,7]screenWidth/tileSize/2
         self.pressed={}
         self.chute=0
         self.ground=True
@@ -269,24 +274,24 @@ class Levels:
         player.move=False
         player.climb=False
         if self.talk==False:
-            if self.pressed.get(pygame.K_RIGHT):
+            if self.pressed.get(pygame.K_d):
                 if not(self.obstacle[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-0.9)]!=0 or self.obstacle[ceil(self.playerPos[1]-3)][ceil(self.playerPos[0]-0.9)]!=0 or (self.ground==False and self.obstacle[ceil(self.playerPos[1]-1)][ceil(self.playerPos[0]-0.9)]!=0)):
                     self.pos[0]-=velocity/50
                     self.playerPos[0]+=velocity/50
                     player.lastDirection=0
                     player.move=True
-            if self.pressed.get(pygame.K_LEFT):
+            if self.pressed.get(pygame.K_q):
                 if not(self.obstacle[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.9)]!=0 or self.obstacle[ceil(self.playerPos[1]-3)][ceil(self.playerPos[0]-1.9)]!=0 or (self.ground==False and self.obstacle[ceil(self.playerPos[1]-1)][ceil(self.playerPos[0]-1.9)]!=0)):
                     self.pos[0]+=velocity/50
                     self.playerPos[0]-=velocity/50
                     player.lastDirection=180
                     player.move=True
-            if self.pressed.get(pygame.K_UP):
+            if self.pressed.get(pygame.K_z):
                 if self.ladder:
                     self.pos[1]+=velocity/50
                     self.playerPos[1]-=velocity/50
                     player.climb=True
-            if self.pressed.get(pygame.K_DOWN):
+            if self.pressed.get(pygame.K_s):
                 if self.ladder and ("ladder" in tilesList[self.utils[ceil(self.playerPos[1]-1)][ceil(self.playerPos[0]-1.2)]] or "ladder" in tilesList[self.utils[ceil(self.playerPos[1]-1)][ceil(self.playerPos[0]-1.8)]]):
                     self.pos[1]-=velocity/50
                     self.playerPos[1]+=velocity/50
@@ -336,21 +341,21 @@ class Levels:
 
             if self.pressed.get(pygame.K_a):
                 if "sign" in tilesList[self.utils[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.2)]]:
-                    sign.read([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.2)])
+                    [s.read([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.2)]) for s in sign]
 
                 if "sign" in tilesList[self.utils[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.8)]]:
-                    sign.read([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.8)])
+                    [s.read([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.8)]) for s in sign]
 
                 if "chest" in tilesList[self.utils[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.2)]]:
-                    chest.openChest([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.2)])
+                    [c.openChest([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.2)]) for c in chest]
                     self.pressed[pygame.K_a]=False
 
                 if "chest" in tilesList[self.utils[ceil(self.playerPos[1]-2)][ceil(self.playerPos[0]-1.8)]]:
-                    chest.openChest([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.8)])
+                    [c.openChest([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.8)]) for c in chest]
                     self.pressed[pygame.K_a]=False
             
-            character.isAtPos([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.8)])
-            monster.isAtPos([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.8)])
+            [c.isAtPos([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.8)]) for c in character]
+            [m.isAtPos([ceil(self.playerPos[1]-1),ceil(self.playerPos[0]-1.8)]) for m in monster]
         except:
             pass
         if (self.ground and self.jumpVelocity<=0) or self.ladder:
@@ -417,9 +422,13 @@ class Player:
                 self.invincibleIter+=2-invincibilityTimeLeft/1.5
         if self.lastDirection==0:
             if ceil(self.invincibleIter)%30<=14:
+                # if inventory.inventory[8]-1>=0:
+                #     screen.blit(itemHandImg[item.item[inventory.inventory[8]-1][2]], ((levels.playerPos[0]-0.4+levels.pos[0])*tileSize,(levels.playerPos[1]-0.7+levels.pos[1])*tileSize-25))
                 screen.blit(self.img[self.current], ((levels.playerPos[0]-1+levels.pos[0])*tileSize,(levels.playerPos[1]-1+levels.pos[1])*tileSize-25))
         else:
             if ceil(self.invincibleIter)%30<=14:
+                # if inventory.inventory[8]-1>=0:
+                #     screen.blit(pygame.transform.flip(itemHandImg[item.item[inventory.inventory[8]-1][2]], True, False), ((levels.playerPos[0]-1.67+levels.pos[0])*tileSize,(levels.playerPos[1]-0.7+levels.pos[1])*tileSize-25))
                 screen.blit(pygame.transform.flip(self.img[self.current], True, False), ((levels.playerPos[0]-1+levels.pos[0])*tileSize,(levels.playerPos[1]-1+levels.pos[1])*tileSize-25))
         
         lifePercent=self.life/self.maxLife*3
@@ -434,53 +443,39 @@ class Player:
         screen.blit(heart, [20,23])
 
 class Sign:
-    def __init__(self):
-        s=''
-        for i in open("./map/sign{}.json".format(level),"r").readlines():
-            s+=i
-        self.sign=[i for i in json.loads(s)['sign']]
+    def __init__(self,sign):
+        self.sign=sign
     
     def read(self,pos):
-        for s in self.sign:
-            if s[1]==pos[0] and s[0]==pos[1]:
-                text=police30.render(s[2], False, pygame.Color("#FFFFFF"))
-                rectText = text.get_rect()
-                rectText.top = (s[1]-2.5+levels.pos[1])*tileSize
-                rectText.left = (s[0]+0.5+levels.pos[0])*tileSize-rectText.width/2
-                screen.blit(text, rectText)
-                break
+        if self.sign[1]==pos[0] and self.sign[0]==pos[1]:
+            text=police30.render(self.sign[2], False, pygame.Color("#FFFFFF"))
+            rectText = text.get_rect()
+            rectText.top = (self.sign[1]-2.5+levels.pos[1])*tileSize
+            rectText.left = (self.sign[0]+0.5+levels.pos[0])*tileSize-rectText.width/2
+            screen.blit(text, rectText)
 
 class Chest:
-    def __init__(self):
-        s=''
-        for i in open("./map/chest{}.json".format(level),"r").readlines():
-            s+=i
-        self.chest=[i for i in json.loads(s)['chest']]
+    def __init__(self,chest):
+        self.chest=chest
     
     def openChest(self,pos):
-        for s in self.chest:
-            if s[0][1]==pos[0] and s[0][0]==pos[1]+1:
-                inventory.chest=True
-                inventory.chestInventory=s[1]
-                if not("void" in tilesList[levels.utils[pos[0]-1][pos[1]]]):
-                    levels.utils[pos[0]-1][pos[1]]=[i for i,v in enumerate(tilesList) if "/open_chest.png" in v][0]
-                break
+        if self.chest[0][1]==pos[0] and self.chest[0][0]==pos[1]+1:
+            inventory.chest=True
+            inventory.chestInventory=self.chest[1]
+            if not("void" in tilesList[levels.utils[pos[0]-1][pos[1]]]):
+                levels.utils[pos[0]-1][pos[1]]=[i for i,v in enumerate(tilesList) if "/open_chest.png" in v][0]
     
     def changeChest(self,pos):
-        for s in self.chest:
-            if s[0][1]==pos[0] and s[0][0]==pos[1]+1:
-                use=[True for i in inventory.chestInventory if i!=0]
-                if True in use:
-                    levels.utils[pos[0]-1][pos[1]]=[i for i,v in enumerate(tilesList) if "/open_chest.png" in v][0]
-                else:
-                    levels.utils[pos[0]-1][pos[1]]=[i for i,v in enumerate(tilesList) if "/void_chest.png" in v][0]
+        if self.chest[0][1]==pos[0] and self.chest[0][0]==pos[1]+1:
+            use=[True for i in inventory.chestInventory if i!=0]
+            if True in use:
+                levels.utils[pos[0]-1][pos[1]]=[i for i,v in enumerate(tilesList) if "/open_chest.png" in v][0]
+            else:
+                levels.utils[pos[0]-1][pos[1]]=[i for i,v in enumerate(tilesList) if "/void_chest.png" in v][0]
 
 class Character:
-    def __init__(self):
-        s=''
-        for i in codecs.open("./map/character{}.json".format(level),"r", "utf-8").readlines():
-            s+=i
-        self.character=[i for i in json.loads(s)['character']]
+    def __init__(self,character):
+        self.character=character
         self.img=talk
         self.talk=False
         self.name=['noname','noname']
@@ -493,11 +488,10 @@ class Character:
             self.iter=0
         else:
             self.iter+=vitesseAnimation
-        for s in self.character:
-            if s[0]<levels.playerPos[0]-1:
-                screen.blit(self.img[self.current], ((s[0]+levels.pos[0])*tileSize,(s[1]+levels.pos[1])*tileSize))
-            else:
-                screen.blit(pygame.transform.flip(self.img[self.current], True, False), ((s[0]+levels.pos[0])*tileSize,(s[1]+levels.pos[1])*tileSize))
+        if self.character[0]<levels.playerPos[0]-1:
+            screen.blit(self.img[self.current], ((self.character[0]+levels.pos[0])*tileSize,(self.character[1]+levels.pos[1])*tileSize))
+        else:
+            screen.blit(pygame.transform.flip(self.img[self.current], True, False), ((self.character[0]+levels.pos[0])*tileSize,(self.character[1]+levels.pos[1])*tileSize))
         if self.talk!=False:
             s=pygame.Surface((screenWidth/2,screenHeight/6), pygame.SRCALPHA)
             s.fill((130,130,130,200))
@@ -515,67 +509,55 @@ class Character:
             
     
     def isAtPos(self,pos):
-        for s in self.character:
-            if (s[1]>=pos[0] and s[1]<=pos[0]+2) or (s[1]>=pos[0]-2 and s[1]<=pos[0]):
-                if (s[0]>=pos[1] and s[0]<=pos[1]+2) or (s[0]>=pos[1]-2 and s[0]<=pos[1]):
-                    if levels.pressed.get(pygame.K_a):
-                        levels.talk=True
-                        player.talk=True
-                        self.talk=s
-                        self.name=[s[5],name]
-                        if s[0]<levels.playerPos[0]-1:
-                            player.lastDirection=180
-                        else:
-                            player.lastDirection=0
-                    elif self.talk==False:
-                        text=police30.render("SALUT !", False, pygame.Color("#FFFFFF"))
-                        rectText = text.get_rect()
-                        rectText.top = (s[1]-1+levels.pos[1])*tileSize
-                        rectText.left = (s[0]+2+levels.pos[0])*tileSize-rectText.width/2
-                        screen.blit(text, rectText)
-                    break
+        if (self.character[1]>=pos[0] and self.character[1]<=pos[0]+2) or (self.character[1]>=pos[0]-2 and self.character[1]<=pos[0]):
+            if (self.character[0]>=pos[1] and self.character[0]<=pos[1]+2) or (self.character[0]>=pos[1]-2 and self.character[0]<=pos[1]):
+                if levels.pressed.get(pygame.K_a):
+                    levels.talk=True
+                    player.talk=True
+                    self.talk=self.character
+                    self.name=[self.character[5],name]
+                    if s[0]<levels.playerPos[0]-1:
+                        player.lastDirection=180
+                    else:
+                        player.lastDirection=0
+                elif self.talk==False:
+                    text=police30.render("SALUT !", False, pygame.Color("#FFFFFF"))
+                    rectText = text.get_rect()
+                    rectText.top = (self.character[1]-1+levels.pos[1])*tileSize
+                    rectText.left = (self.character[0]+2+levels.pos[0])*tileSize-rectText.width/2
+                    screen.blit(text, rectText)
 
     def change(self):
-        if self.talk[2]+1==len(self.talk[4])+len(self.talk[3]):
-            levels.talk=False
-            player.talk=False
-            for v,s in enumerate(self.character):
-                if s[0]==self.talk[0] and s[1]==self.talk[1]:
-                    self.character[v][2]=0
-            self.talk=False
-            self.name=['noname','noname']
-        else:
-            self.talk[2]+=1
+        if self.talk!=False:
+            if self.talk[2]+1==len(self.talk[4])+len(self.talk[3]):
+                levels.talk=False
+                player.talk=False
+                if self.character[0]==self.talk[0] and self.character[1]==self.talk[1]:
+                    self.character[2]=0
+                self.talk=False
+                self.name=['noname','noname']
+            else:
+                self.talk[2]+=1
 
 class Text:
-    def __init__(self):
-        s=''
-        for i in codecs.open("./map/text{}.json".format(level),"r", "utf-8").readlines():
-            s+=i
-        self.t=[i for i in json.loads(s)['text']]
-        self.text=[police30.render(i[0], False, pygame.Color("#FFFFFF")) for i in self.t]
+    def __init__(self,text):
+        self.t=text
+        self.text=police30.render(self.t[0], False, pygame.Color("#FFFFFF"))
     
     def draw(self):
-        for i,v in enumerate(self.text):
-            rectText = v.get_rect()
-            rectText.top = self.t[i][1]+levels.pos[1]*tileSize
-            rectText.left = self.t[i][2]+levels.pos[0]*tileSize
-            screen.blit(v, rectText)
+        rectText = self.text.get_rect()
+        rectText.top = self.t[1]+levels.pos[1]*tileSize
+        rectText.left = self.t[2]+levels.pos[0]*tileSize
+        screen.blit(self.text, rectText)
 
 class Monster:
-    def __init__(self):
-        s=''
-        for i in codecs.open("./map/monster{}.json".format(level),"r", "utf-8").readlines():
-            s+=i
-        self.monster=[i for i in json.loads(s)['monster']]
+    def __init__(self,monster):
+        self.monster=monster
         self.img=snake
         self.iter=0
-        self.rect=[]
-        for s in self.monster:
-            temp=snake[0].get_rect()
-            temp.top=s[3][1]*tileSize
-            temp.left=s[3][0]*tileSize
-            self.rect.append(temp)
+        self.rect=snake[0].get_rect()
+        self.rect.top=self.monster[3][1]*tileSize
+        self.rect.left=self.monster[3][0]*tileSize
         self.current=0
         self.jumpVelocity=-1
         self.isJump=False
@@ -586,88 +568,110 @@ class Monster:
             self.iter=0
         else:
             self.iter+=vitesseAnimation
-        for m in self.monster:
-            if m[4]==0:
-                screen.blit(self.img[self.current], ((m[3][0]-1+levels.pos[0])*tileSize,(m[3][1]-1+levels.pos[1])*tileSize-25))
-            else:
-                screen.blit(pygame.transform.flip(self.img[self.current], True, False), ((m[3][0]-1+levels.pos[0])*tileSize,(m[3][1]-1+levels.pos[1])*tileSize-25))
-            
+        if self.monster[4]==0:
+            screen.blit(self.img[self.current], ((self.monster[3][0]-1+levels.pos[0])*tileSize,(self.monster[3][1]-1+levels.pos[1])*tileSize-25))
+        else:
+            screen.blit(pygame.transform.flip(self.img[self.current], True, False), ((self.monster[3][0]-1+levels.pos[0])*tileSize,(self.monster[3][1]-1+levels.pos[1])*tileSize-25))
+        pygame.draw.rect(screen, (50,50,50), [(self.monster[3][0]-1+levels.pos[0])*tileSize,(self.monster[3][1]-1+levels.pos[1])*tileSize-25+10, self.rect.width, 7], 0, 2)
+        pygame.draw.rect(screen, (42,135,31), [(self.monster[3][0]-1+levels.pos[0])*tileSize,(self.monster[3][1]-1+levels.pos[1])*tileSize-25+10, self.rect.width/self.monster[1]*self.monster[9], 7], 0, 2)
+
     
     def gravity(self, PCspeed):
-        tempList=[]
-        for m in self.monster:
+        rect=True
+        if self.monster[10]==0:
             ground=False
             try:
-                top=ceil(m[3][1]-1)
-                if levels.obstacle[top][ceil(m[3][0]-1.2)]!=0 or levels.obstacle[top][ceil(m[3][0]-1.8)]!=0 or ((levels.back[top][ceil(m[3][0]-1.2)]!=0 or levels.back[top][ceil(m[3][0]-1.8)]!=0) and (levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-1.2)]==0 and levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-1.8)]==0)):
+                top=ceil(self.monster[3][1]-1)
+                if levels.obstacle[top][ceil(self.monster[3][0]-1.2)]!=0 or levels.obstacle[top][ceil(self.monster[3][0]-1.8)]!=0 or ((levels.back[top][ceil(self.monster[3][0]-1.2)]!=0 or levels.back[top][ceil(self.monster[3][0]-1.8)]!=0) and (levels.back[ceil(self.monster[3][1]-2)][ceil(self.monster[3][0]-1.2)]==0 and levels.back[ceil(self.monster[3][1]-2)][ceil(self.monster[3][0]-1.8)]==0)):
                     ground=True
             except:
                 pass
-            if ground and m[8]<=0:
-                m[7]=False
+            if ground and self.monster[8]<=0:
+                self.monster[7]=False
             else:
-                m[7]=True
+                self.monster[7]=True
 
-            if m[4]==0:
-                if not(levels.obstacle[ceil(m[3][1]-2)][ceil(m[3][0]-0.9)]!=0 or levels.obstacle[ceil(m[3][1]-3)][ceil(m[3][0]-0.9)]!=0 or (ground==False and levels.obstacle[ceil(m[3][1]-1)][ceil(m[3][0]-0.9)]!=0)):
-                    top=ceil(m[3][1]-1)
-                    if levels.obstacle[top][ceil(m[3][0]-0.2)]!=0 or levels.obstacle[top][ceil(m[3][0]-0.8)]!=0 or ((levels.back[top][ceil(m[3][0]-0.2)]!=0 or levels.back[top][ceil(m[3][0]-0.8)]!=0) and (levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-0.2)]==0 and levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-0.8)]==0)):
-                        m[3][0]+=m[5]*(PCspeed/20)
-                    elif levels.obstacle[top+m[6]][ceil(m[3][0]-0.2)]!=0 or levels.obstacle[top+m[6]][ceil(m[3][0]-0.8)]!=0 or ((levels.back[top+m[6]][ceil(m[3][0]-0.2)]!=0 or levels.back[top+m[6]][ceil(m[3][0]-0.8)]!=0) and (levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-0.2)]==0 and levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-0.8)]==0)):
-                        m[3][0]+=m[5]*(PCspeed/20)
+            if self.monster[4]==0:
+                if not(levels.obstacle[ceil(self.monster[3][1]-2)][ceil(self.monster[3][0]-0.9)]!=0 or levels.obstacle[ceil(self.monster[3][1]-3)][ceil(self.monster[3][0]-0.9)]!=0 or (ground==False and levels.obstacle[ceil(self.monster[3][1]-1)][ceil(self.monster[3][0]-0.9)]!=0)):
+                    top=ceil(self.monster[3][1]-1)
+                    if levels.obstacle[top][ceil(self.monster[3][0]-0.2)]!=0 or levels.obstacle[top][ceil(self.monster[3][0]-0.8)]!=0 or ((levels.back[top][ceil(self.monster[3][0]-0.2)]!=0 or levels.back[top][ceil(self.monster[3][0]-0.8)]!=0) and (levels.back[ceil(self.monster[3][1]-2)][ceil(self.monster[3][0]-0.2)]==0 and levels.back[ceil(self.monster[3][1]-2)][ceil(self.monster[3][0]-0.8)]==0)):
+                        self.monster[3][0]+=self.monster[5]*(PCspeed/20)
+                    elif levels.obstacle[top+self.monster[6]][ceil(self.monster[3][0]-0.2)]!=0 or levels.obstacle[top+self.monster[6]][ceil(self.monster[3][0]-0.8)]!=0 or ((levels.back[top+self.monster[6]][ceil(self.monster[3][0]-0.2)]!=0 or levels.back[top+self.monster[6]][ceil(self.monster[3][0]-0.8)]!=0) and (levels.back[ceil(self.monster[3][1]-2)][ceil(self.monster[3][0]-0.2)]==0 and levels.back[ceil(self.monster[3][1]-2)][ceil(self.monster[3][0]-0.8)]==0)):
+                        self.monster[3][0]+=self.monster[5]*(PCspeed/20)
                     else:
-                        m[4]=180
-                elif not(levels.obstacle[ceil(m[3][1]-2-m[6])][ceil(m[3][0]-0.9)]!=0 or levels.obstacle[ceil(m[3][1]-3-m[6])][ceil(m[3][0]-0.9)]!=0 or (ground==False and levels.obstacle[ceil(m[3][1]-1-m[6])][ceil(m[3][0]-0.9)]!=0)):
-                    m[7]=True
-                    m[8]=10.5
-                    m[3][0]+=m[5]*(PCspeed/20)
+                        self.monster[4]=180
+                elif not(levels.obstacle[ceil(self.monster[3][1]-2-self.monster[6])][ceil(self.monster[3][0]-0.9)]!=0 or levels.obstacle[ceil(self.monster[3][1]-3-self.monster[6])][ceil(self.monster[3][0]-0.9)]!=0 or (ground==False and levels.obstacle[ceil(self.monster[3][1]-1-self.monster[6])][ceil(self.monster[3][0]-0.9)]!=0)):
+                    self.monster[7]=True
+                    self.monster[8]=10.5
+                    self.monster[3][0]+=self.monster[5]*(PCspeed/20)
                 else:
-                    m[4]=180
-            elif m[4]==180:
-                if not(levels.obstacle[ceil(m[3][1]-2)][ceil(m[3][0]-1.9)]!=0 or levels.obstacle[ceil(m[3][1]-3)][ceil(m[3][0]-1.9)]!=0 or (ground==False and levels.obstacle[ceil(m[3][1]-1)][ceil(m[3][0]-1.9)]!=0)):
-                    top=ceil(m[3][1]-1)
-                    if levels.obstacle[top][ceil(m[3][0]-2.2)]!=0 or levels.obstacle[top][ceil(m[3][0]-2.8)]!=0 or ((levels.back[top][ceil(m[3][0]-2.2)]!=0 or levels.back[top][ceil(m[3][0]-2.8)]!=0) and (levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-2.2)]==0 and levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-2.8)]==0)):
-                        m[3][0]-=m[5]*(PCspeed/20)
-                    elif levels.obstacle[top+m[6]][ceil(m[3][0]-2.2)]!=0 or levels.obstacle[top+m[6]][ceil(m[3][0]-2.8)]!=0 or ((levels.back[top+m[6]][ceil(m[3][0]-2.2)]!=0 or levels.back[top+m[6]][ceil(m[3][0]-2.8)]!=0) and (levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-2.2)]==0 and levels.back[ceil(m[3][1]-2)][ceil(m[3][0]-2.8)]==0)):
-                        m[3][0]-=m[5]*(PCspeed/20)
+                    self.monster[4]=180
+            elif self.monster[4]==180:
+                if not(levels.obstacle[ceil(self.monster[3][1]-2)][ceil(self.monster[3][0]-1.9)]!=0 or levels.obstacle[ceil(self.monster[3][1]-3)][ceil(self.monster[3][0]-1.9)]!=0 or (ground==False and levels.obstacle[ceil(self.monster[3][1]-1)][ceil(self.monster[3][0]-1.9)]!=0)):
+                    top=ceil(self.monster[3][1]-1)
+                    if levels.obstacle[top][ceil(self.monster[3][0]-2.2)]!=0 or levels.obstacle[top][ceil(self.monster[3][0]-2.8)]!=0 or ((levels.back[top][ceil(self.monster[3][0]-2.2)]!=0 or levels.back[top][ceil(self.monster[3][0]-2.8)]!=0) and (levels.back[ceil(self.monster[3][1]-2)][ceil(self.monster[3][0]-2.2)]==0 and levels.back[ceil(self.monster[3][1]-2)][ceil(self.monster[3][0]-2.8)]==0)):
+                        self.monster[3][0]-=self.monster[5]*(PCspeed/20)
+                    elif levels.obstacle[top+self.monster[6]][ceil(self.monster[3][0]-2.2)]!=0 or levels.obstacle[top+self.monster[6]][ceil(self.monster[3][0]-2.8)]!=0 or ((levels.back[top+self.monster[6]][ceil(self.monster[3][0]-2.2)]!=0 or levels.back[top+self.monster[6]][ceil(self.monster[3][0]-2.8)]!=0) and (levels.back[ceil(self.monster[3][1]-2)][ceil(self.monster[3][0]-2.2)]==0 and levels.back[ceil(self.monster[3][1]-2)][ceil(self.monster[3][0]-2.8)]==0)):
+                        self.monster[3][0]-=self.monster[5]*(PCspeed/20)
                     else:
-                        m[4]=0
-                elif not(levels.obstacle[ceil(m[3][1]-2-m[6])][ceil(m[3][0]-1.9)]!=0 or levels.obstacle[ceil(m[3][1]-3-m[6])][ceil(m[3][0]-1.9)]!=0 or (ground==False and levels.obstacle[ceil(m[3][1]-1-m[6])][ceil(m[3][0]-1.9)]!=0)):
-                    m[7]=True
-                    m[8]=10.5
-                    m[3][0]-=m[5]*(PCspeed/20)
+                        self.monster[4]=0
+                elif not(levels.obstacle[ceil(self.monster[3][1]-2-self.monster[6])][ceil(self.monster[3][0]-1.9)]!=0 or levels.obstacle[ceil(self.monster[3][1]-3-self.monster[6])][ceil(self.monster[3][0]-1.9)]!=0 or (ground==False and levels.obstacle[ceil(self.monster[3][1]-1-self.monster[6])][ceil(self.monster[3][0]-1.9)]!=0)):
+                    self.monster[7]=True
+                    self.monster[8]=10.5
+                    self.monster[3][0]-=self.monster[5]*(PCspeed/20)
                 else:
-                    m[4]=0
+                    self.monster[4]=0
 
-            if m[7]:
-                if m[8]<0:
-                    F = (0.0005 * (m[8]**2))
+            if self.monster[7]:
+                if self.monster[8]<0:
+                    F = (0.0005 * (self.monster[8]**2))
                 else:
-                    F = -(0.0005 * (m[8]**2))
-                if m[8]<-12:
-                    m[8]+=0.2*PCspeed/1.4
-                m[8]-=0.2*PCspeed/1.4
-                m[3][1]+=F*PCspeed/1.4
+                    F = -(0.0005 * (self.monster[8]**2))
+                if self.monster[8]<-12:
+                    self.monster[8]+=0.2*PCspeed/1.4
+                self.monster[8]-=0.2*PCspeed/1.4
+                self.monster[3][1]+=F*PCspeed/1.4
             else:
-                m[8]=-2
+                self.monster[8]=-2
 
-            temp=snake[0].get_rect()
-            temp.top=(m[3][1]+levels.pos[1])*tileSize-temp.height+25
-            temp.left=(m[3][0]+levels.pos[0])*tileSize-temp.width+15
-            temp.height-=25
-            tempList.append(temp)
-        self.rect.clear()
-        for i in tempList:
-            self.rect.append(i)
+        else:
+            if self.monster[8]<0:
+                F = (0.0005 * (self.monster[8]**2))
+            else:
+                F = -(0.0005 * (self.monster[8]**2))
+            self.monster[8]-=0.2*PCspeed/1.4
+            self.monster[3][1]+=F*PCspeed/1.4
+            if self.monster[3][1]>len(levels.obstacle):
+                for i,m in enumerate(monster):
+                    if m==self:
+                        del monster[i]
+                rect=False
+
+        if rect:
+            self.rect=snake[0].get_rect()
+            self.rect.top=(self.monster[3][1]+levels.pos[1])*tileSize-self.rect.height+25
+            self.rect.left=(self.monster[3][0]+levels.pos[0])*tileSize-self.rect.width+15
+            self.rect.height-=25
+
     
     def isAtPos(self,pos):
         if player.invincible==False:
             current=ceil(iteration/vitesseAnimation)%2
-            for i,s in enumerate(self.monster):
-                if pygame.mask.from_surface(self.img[self.current]).overlap(pygame.mask.from_surface(player.img[player.current]), (self.rect[i].left-player.rect.left, self.rect[i].top-player.rect.top)) != None:
-                    player.life-=s[2]
+            if self.monster[10]==0:
+                if pygame.mask.from_surface(self.img[self.current]).overlap(pygame.mask.from_surface(player.img[player.current]), (self.rect.left-player.rect.left, self.rect.top-player.rect.top)) != None:
+                    player.life-=self.monster[2]
                     player.invincible=True
                     player.invincibleTime=time.time()+3
+    
+    def hitMonster(self,pos,damage):
+        if self.rect.top<pos[1] and self.rect.bottom>pos[1]:
+            if self.rect.left<pos[0] and self.rect.right>pos[0]:
+                if self.monster[10]==0:
+                    self.monster[9]-=damage
+                    if self.monster[9]<=0:
+                        self.monster[10]=1
+                        self.monster[8]=10
+    
 
 class Item:
     def __init__(self):
@@ -758,6 +762,13 @@ class Inventory:
                     else:
                         screen.blit(itemImg[item.item[self.inventory[self.select-8]-1][2]],(pos[0]-pixel*8,pos[1]-pixel*8))
     
+    def hit(self,pos):
+        if inventory.inventory[8]-1>=0:
+            mid=[round(player.rect.left+player.rect.width/2),round(player.rect.top+player.rect.height/2)]
+            distance=sqrt((pos[0]-mid[0])**2+(pos[1]-mid[1])**2)/tileSize
+            weapon=item.item[inventory.inventory[8]-1]
+            if distance<=weapon[4]:
+                [m.hitMonster(pos, weapon[1]) for m in monster]
 
 
 class Camera:
@@ -810,9 +821,9 @@ def inventoryEvenements(key):
     while pause:
         levels.draw()
         text.draw()
-        monster.draw(0)
+        [m.draw(vitesseAnimation) for m in monster]
         player.draw(levels)
-        character.draw(0)
+        [c.draw(0) for c in character]
         inventory.draw()
         for event in pygame.event.get():
             if event.type==pygame.QUIT:
@@ -920,22 +931,38 @@ def inventoryEvenements(key):
                                     else:
                                         inventory.inventory[inventory.select-8], inventory.inventory[select-8]=inventory.inventory[select-8],inventory.inventory[inventory.select-8]
                     
-                    chest.changeChest([ceil(levels.playerPos[1]-1),ceil(levels.playerPos[0]-1.8)])
-                    chest.changeChest([ceil(levels.playerPos[1]-1),ceil(levels.playerPos[0]-1.2)])
+                    [c.changeChest([ceil(levels.playerPos[1]-1),ceil(levels.playerPos[0]-1.8)]) for c in chest]
+                    [c.changeChest([ceil(levels.playerPos[1]-1),ceil(levels.playerPos[0]-1.2)]) for c in chest]
 
-                print(pos)
         pygame.display.flip()
     timeStamp=time.time()-0.001
 
 levels=Levels()
 player=Player()
-sign=Sign()
-chest=Chest()
-character=Character()
-text=Text()
+
+s=''
+for i in codecs.open("./map/sign{}.json".format(level),"r").readlines():
+    s+=i
+sign=[Sign(i) for i in json.loads(s)['sign']]
+s=''
+for i in codecs.open("./map/chest{}.json".format(level),"r").readlines():
+    s+=i
+chest=[Chest(i) for i in json.loads(s)['chest']]
+s=''
+for i in codecs.open("./map/character{}.json".format(level),"r", "utf-8").readlines():
+    s+=i
+character=[Character(i) for i in json.loads(s)['character']]
+s=''
+for i in codecs.open("./map/text{}.json".format(level),"r", "utf-8").readlines():
+    s+=i
+text=[Text(i) for i in json.loads(s)['text']]
+s=''
+for i in codecs.open("./map/monster{}.json".format(level),"r", "utf-8").readlines():
+    s+=i
+
+monster=[Monster(i) for i in json.loads(s)['monster']]
 tuto=Tuto()
 item=Item()
-monster=Monster()
 inventory=Inventory()
 camera=Camera()
 game=True
@@ -957,15 +984,15 @@ while game:
     vitessePlayer=2*PCspeed
     #########################
     levels.move(vitessePlayer,player)
-    monster.gravity(PCspeed)
+    [m.gravity(PCspeed) for m in monster]
     levels.draw()
-    text.draw()
-    monster.draw(vitesseAnimation)
+    [t.draw() for t in text]
+    [m.draw(vitesseAnimation) for m in monster]
     player.draw(levels)
     if level==1:
         tuto.draw()
     levels.gravity()
-    character.draw(vitesseAnimation)
+    [c.draw(vitesseAnimation) for c in character]
     inventory.draw()
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
@@ -977,15 +1004,17 @@ while game:
             elif event.key==pygame.K_e and not(inventory.chest):
                 inventory.open=not(inventory.open)
             elif event.key==pygame.K_a and levels.talk:
-                character.change()
+                [c.change() for c in character]
             else:
                 levels.pressed[event.key]=True
         elif event.type==pygame.KEYUP:
             levels.pressed[event.key]=False
+        elif event.type==pygame.MOUSEBUTTONDOWN:
+            inventory.hit(event.pos)
         elif event.type==pygame.VIDEORESIZE:
             oldTileSize=tileSize
             tileSize=round(event.w/(screenWidth/tileSize))
-            levels.pos[1]=levels.pos[1]-(levels.pos[1]/(tileSize/oldTileSize))
+            levels.pos[1]+=((screenWidth-event.w)/2-(screenHeight-event.h)/2)/tileSize
             tiles=[pygame.transform.scale(pygame.image.load(i).convert_alpha(), (tileSize+1, tileSize)) for i in tilesList]
             screenWidth=screen.get_rect().width
             screenHeight=screen.get_rect().height
